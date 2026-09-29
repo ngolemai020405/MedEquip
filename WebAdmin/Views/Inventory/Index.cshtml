@@ -1,0 +1,33 @@
+@using Newtonsoft.Json.Linq
+@model List<JObject>
+@{ ViewData["Title"] = "Ton kho"; }
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-primary"><i class="bi bi-archive me-2"></i>Quản lý Tồn kho</h3>
+</div>
+<div class="card p-3">
+    <table class="table table-hover align-middle">
+        <thead><tr><th>Sản phẩm</th><th>SL tồn</th><th>SL tối thiểu</th><th>Cảnh báo</th><th>Cập nhật</th></tr></thead>
+        <tbody>
+        @foreach (var i in Model)
+        {
+            <tr class="@(((bool)i["canhBaoSapHet"]!) ? "table-danger" : "")">
+                <td class="fw-bold">@i["tenSP"]</td>
+                <td>@i["soLuongTon"]</td>
+                <td>@i["soLuongToiThieu"]</td>
+                <td>
+                    @if ((bool)i["canhBaoSapHet"]!) { <span class="badge bg-danger">Sap het hang</span> }
+                    else { <span class="badge bg-success">On dinh</span> }
+                </td>
+                <td>
+                    <form asp-action="CapNhat" method="post" class="d-flex gap-1">
+                        <input type="hidden" name="productId" value="@i["productId"]" />
+                        <input type="number" name="soLuongTon" value="@i["soLuongTon"]" min="0" class="form-control form-control-sm" style="width:80px" />
+                        <input type="number" name="soLuongToiThieu" value="@i["soLuongToiThieu"]" min="0" class="form-control form-control-sm" style="width:80px" />
+                        <button class="btn btn-sm btn-outline-primary">Lưu</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

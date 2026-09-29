@@ -1,0 +1,23 @@
+@model CategoryVM
+@{ ViewData["Title"] = "Thêm Danh mục"; }
+<h3>Thêm Danh mục</h3>
+@if (ViewBag.Loi != null) { <div class="alert alert-danger">@ViewBag.Loi</div> }
+<div class="card p-4" style="max-width:500px">
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label class="form-label">Tên Danh mục</label>
+            <input asp-for="TenDanhMuc" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Mô tả</label>
+            <textarea asp-for="MoTa" class="form-control"></textarea>
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-medium text-primary"><i class="bi bi-list-nested me-1"></i>Thêm nhanh các danh mục con</label>
+            <textarea asp-for="DanhSachDanhMucCon" class="form-control" rows="2" placeholder="Ví dụ: Giường bệnh nhân, Xe đẩy y tế, Đèn khám bệnh... (phân cách bằng dấu phẩy)"></textarea>
+            <div class="form-text">Bạn có thể nhập nhiều danh mục con, cách nhau bằng dấu phẩy (,).</div>
+        </div>
+        <button class="btn btn-primary">Lưu</button>
+        <a class="btn btn-secondary" asp-action="Index">Huy</a>
+    </form>
+</div>

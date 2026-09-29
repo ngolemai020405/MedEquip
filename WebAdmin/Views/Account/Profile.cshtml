@@ -1,0 +1,44 @@
+@using Newtonsoft.Json.Linq
+@model JObject
+@{ ViewData["Title"] = "Hồ sơ cá nhân"; }
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h3 class="fw-bold mb-4"><i class="bi bi-person-badge text-primary me-2"></i>Hồ sơ cá nhân</h3>
+        @if(TempData["Thanhcong"] != null)
+        {
+            <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>@TempData["Thanhcong"]</div>
+        }
+        @if(TempData["Loi"] != null)
+        {
+            <div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>@TempData["Loi"]</div>
+        }
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <form asp-action="Profile" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Vai trò</label>
+                    <input class="form-control bg-light" value="@(Model["roleName"] ?? Model["RoleName"])" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Email (Đăng nhập)</label>
+                    <input name="email" class="form-control" type="email" value="@(Model["email"] ?? Model["Email"])" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Họ và tên</label>
+                    <input name="hoTen" class="form-control" value="@(Model["hoTen"] ?? Model["HoTen"])" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Số điện thoại</label>
+                    <input name="sdt" class="form-control" value="@(Model["sdt"] ?? Model["SDT"])" />
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-medium">Địa chỉ</label>
+                    <textarea name="diaChi" class="form-control" rows="2">@(Model["diaChi"] ?? Model["DiaChi"])</textarea>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

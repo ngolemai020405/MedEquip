@@ -1,0 +1,11 @@
+@model int
+@{ ViewData["Title"] = "Đặt hàng thành công"; }
+<div class="text-center py-5">
+    <i class="bi bi-check-circle-fill text-success" style="font-size:4rem"></i>
+    <h3 class="mt-3 fw-bold text-dark">Đặt hàng thành công!</h3>
+    <p class="fs-5 text-muted">Mã Đơn hàng của bạn là <b class="text-primary">#@Model</b>. Chúng tôi sẽ liên hệ xác nhận trong thời gian sớm nhất.</p>
+    <div class="mt-4">
+        <a class="btn btn-primary px-4 fw-bold me-2" asp-controller="Orders" asp-action="Detail" asp-route-id="@Model"><i class="bi bi-file-earmark-text me-2"></i>Xem Đơn hàng</a>
+        <a class="btn btn-outline-secondary px-4 fw-bold" asp-controller="Products" asp-action="Index"><i class="bi bi-cart me-2"></i>Tiếp tục mua sắm</a>
+    </div>
+</div>

@@ -1,0 +1,88 @@
+@using Newtonsoft.Json.Linq
+@model JObject
+@{ ViewData["Title"] = "Chi tiết Đơn hàng"; }
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold"><i class="bi bi-receipt text-primary me-2"></i>Đơn hàng #@Model["orderId"]</h3>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Quay lại</a>
+        </div>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <p class="mb-1 text-muted">Trạng thái</p>
+                        <span class="badge bg-info text-dark fs-6">@Model["trangThai"]</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="mb-1 text-muted">Ngày đặt</p>
+                        <span class="fw-bold">@Convert.ToDateTime(Model["ngayDat"]).ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <p class="mb-1 text-muted">Phương thức thanh toán</p>
+                        <span class="fw-bold">@Model["phuongThucThanhToan"]</span>
+                        @if((bool)Model["daThanhToan"]!) { <span class="badge bg-success ms-2">Đã thanh toán</span> }
+                        else { <span class="badge bg-warning text-dark ms-2">Chưa thanh toán</span> }
+                    </div>
+                </div>
+                <hr />
+                <h6 class="fw-bold text-muted mb-3">Thông tin giao hàng</h6>
+                <p class="mb-1"><b>Người nhận:</b> @Model["user"]?["hoTen"]</p>
+                <p class="mb-1"><b>SĐT nhận:</b> @Model["sdtNhan"]</p>
+                <p class="mb-1"><b>Địa chỉ giao:</b> @Model["diaChiGiaoDayDu"]</p>
+                @if(Model["ghiChu"]?.Type != JTokenType.Null && !string.IsNullOrEmpty((string)Model["ghiChu"]!))
+                {
+                    <p class="mb-0"><b>Ghi chú:</b> @Model["ghiChu"]</p>
+                }
+            </div>
+        </div>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Sản phẩm</th>
+                                <th>Đơn Giá</th>
+                                <th>SL</th>
+                                <th class="text-end pe-4">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var d in Model["orderDetails"]!)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <img src="@d["product"]!["hinhAnh"]" style="width: 50px; height: 50px; object-fit: cover;" class="rounded me-3" />
+                                        <span class="fw-semibold">@d["product"]!["tenSP"]</span>
+                                    </div>
+                                </td>
+                                <td>@Convert.ToDecimal(d["donGia"]).ToString("N0") VNĐ</td>
+                                <td>@d["soLuong"]</td>
+                                <td class="text-end pe-4 fw-bold text-primary">@((Convert.ToDecimal(d["donGia"]) * Convert.ToInt32(d["soLuong"])).ToString("N0")) VNĐ</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white text-end p-4">
+                <h5 class="mb-0">Tổng tiền: <span class="text-danger fw-bold ms-2">@Convert.ToDecimal(Model["tongTien"]).ToString("N0") VNĐ</span></h5>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mb-5">
+            @if((string)Model["trangThai"]! == "ChoXacNhan")
+            {
+                <form asp-action="Cancel" method="post" asp-route-id="@Model["orderId"]" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle me-2"></i>Hủy đơn hàng</button>
+                </form>
+            }
+            <form asp-action="ReOrder" method="post" asp-route-id="@Model["orderId"]">
+                <button type="submit" class="btn btn-success"><i class="bi bi-cart-plus me-2"></i>Đặt lại đơn này</button>
+            </form>
+        </div>
+    </div>
+</div>

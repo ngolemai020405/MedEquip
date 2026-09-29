@@ -1,0 +1,151 @@
+@using Newtonsoft.Json.Linq
+@model JObject
+@{ ViewData["Title"] = "Hồ sơ cá nhân"; }
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 col-lg-6">
+        <h3 class="fw-bold mb-4 text-center"><i class="bi bi-person-circle text-primary me-2"></i>Hồ sơ cá nhân</h3>
+        @if(TempData["ToastMessage"] != null)
+        {
+            <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>@TempData["ToastMessage"]</div>
+        }
+        @if(TempData["Loi"] != null)
+        {
+            <div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>@TempData["Loi"]</div>
+        }
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <form asp-action="Profile" method="post" id="profileForm">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Email (Đăng nhập)</label>
+                    <input name="email" class="form-control" type="email" value="@(Model["email"] ?? Model["Email"])" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Họ và tên</label>
+                    <input name="hoTen" class="form-control" value="@(Model["hoTen"] ?? Model["HoTen"])" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Số điện thoại</label>
+                    <input name="sdt" class="form-control" value="@(Model["sdt"] ?? Model["SDT"])" />
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-medium">Tỉnh/Thành phố</label>
+                        <select name="tinhId" class="form-select" id="tinhSelect">
+                            <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                            @if (ViewBag.DanhSachTinh != null)
+                            {
+                                var currentTinhId = (Model["tinhId"] ?? Model["TinhId"])?.ToString();
+                                foreach (var t in (List<Newtonsoft.Json.Linq.JObject>)ViewBag.DanhSachTinh)
+                                {
+                                    if (currentTinhId == t["tinhId"]?.ToString())
+                                    {
+                                        <option value="@t["tinhId"]" selected>@t["tenTinh"]</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@t["tinhId"]">@t["tenTinh"]</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-medium">Xã/Phường</label>
+                        <select name="phuongXaId" class="form-select" id="phuongXaSelect">
+                            <option value="">-- Chọn Tỉnh/Thành phố trước --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-medium">Số nhà, tên đường</label>
+                    <input name="soNhaTenDuong" class="form-control" value="@(Model["soNhaTenDuong"] ?? Model["SoNhaTenDuong"])" placeholder="Ví dụ: 123 Đường ABC" />
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" id="btnSave" class="btn btn-primary fw-bold py-2" disabled>Cập nhật hồ sơ</button>
+                    <a asp-action="Profile" id="btnCancel" class="btn btn-light fw-bold py-2 border disabled">Hủy</a>
+                    <a asp-controller="Orders" asp-action="Index" class="btn btn-outline-secondary py-2 mt-2">Quản lý Đơn hàng của tôi</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const form = document.getElementById('profileForm');
+        const btnSave = document.getElementById('btnSave');
+        const btnCancel = document.getElementById('btnCancel');
+        
+        // Handle Tinh/PhuongXa
+        const tinhSelect = document.getElementById('tinhSelect');
+        const phuongXaSelect = document.getElementById('phuongXaSelect');
+        const initialPhuongXaId = '@(Model["phuongXaId"] ?? Model["PhuongXaId"])';
+
+        async function loadPhuongXa(tinhId, selectId = null) {
+            phuongXaSelect.innerHTML = '<option value="">-- Đang tải... --</option>';
+            if (!tinhId) {
+                phuongXaSelect.innerHTML = '<option value="">-- Chọn Tỉnh/Thành phố trước --</option>';
+                return;
+            }
+            try {
+                var res = await fetch('/Cart/PhuongXaTheoTinh?tinhId=' + tinhId);
+                var data = await res.json();
+                phuongXaSelect.innerHTML = '<option value="">-- Chọn Xã/Phường --</option>';
+                data.forEach(function (px) {
+                    var opt = document.createElement('option');
+                    opt.value = px.phuongXaId;
+                    opt.textContent = px.tenPhuongXa;
+                    if (selectId && selectId == px.phuongXaId) {
+                        opt.selected = true;
+                    }
+                    phuongXaSelect.appendChild(opt);
+                });
+            } catch (e) {
+                phuongXaSelect.innerHTML = '<option value="">-- Lỗi tải dữ liệu, thử lại --</option>';
+            }
+        }
+
+        tinhSelect.addEventListener('change', function () {
+            loadPhuongXa(this.value);
+            checkChanges(); // Trigger change check when Tinh changes
+        });
+        
+        phuongXaSelect.addEventListener('change', function() {
+            checkChanges(); // Trigger change check when PhuongXa changes
+        });
+
+        if (tinhSelect.value) {
+            await loadPhuongXa(tinhSelect.value, initialPhuongXaId);
+        }
+
+        // Handle Form Changes
+        const inputs = Array.from(form.querySelectorAll('input, select'));
+        const originalValues = {};
+        
+        // Save initial values after a short delay so dynamically loaded selects are accounted for
+        setTimeout(() => {
+            inputs.forEach(input => {
+                originalValues[input.name] = input.value;
+            });
+        }, 500);
+        
+        function checkChanges() {
+            let changed = false;
+            inputs.forEach(input => {
+                if (originalValues[input.name] !== undefined && input.value !== originalValues[input.name]) {
+                    changed = true;
+                }
+            });
+            if (changed) {
+                btnSave.disabled = false;
+                btnCancel.classList.remove('disabled');
+            } else {
+                btnSave.disabled = true;
+                btnCancel.classList.add('disabled');
+            }
+        }
+        
+        form.addEventListener('input', checkChanges);
+        form.addEventListener('change', checkChanges);
+    });
+</script>
+}

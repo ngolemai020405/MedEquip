@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:MedEquipMobile.Models"
+             xmlns:fonts="clr-namespace:MedEquipMobile.Resources.Fonts"
+             x:Class="MedEquipMobile.Views.OrdersPage"
+             Title="Đơn hàng của tôi"
+             BackgroundColor="{StaticResource Background}">
+             
+    <ContentPage.ToolbarItems>
+        <ToolbarItem IconImageSource="{FontImage FontFamily=MaterialDesignIcons, Glyph={x:Static fonts:IconFont.ClipboardList}, Color=White, Size=24}" Command="{Binding LoadOrdersCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <Grid>
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" VerticalOptions="Center" Color="{StaticResource Primary}"/>
+        
+        <CollectionView ItemsSource="{Binding Orders}" Margin="15">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Order">
+                    <Border StrokeShape="RoundRectangle 12" Stroke="Transparent" BackgroundColor="White" Margin="0,0,0,15" Padding="15">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.05"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="10">
+                            <!-- Header Đơn hàng -->
+                            <Grid ColumnDefinitions="*, Auto">
+                                <HorizontalStackLayout Grid.Column="0" Spacing="8">
+                                    <Label Text="{x:Static fonts:IconFont.ClipboardList}" FontFamily="MaterialDesignIcons" FontSize="20" TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                    <Label Text="{Binding OrderId, StringFormat='Đơn hàng #{0}'}" FontAttributes="Bold" FontSize="16" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                                <Border Grid.Column="1" StrokeShape="RoundRectangle 20" Stroke="Transparent" BackgroundColor="{StaticResource LightAccent}" Padding="10,5">
+                                    <Label Text="{Binding Status}" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold" FontSize="12" />
+                                </Border>
+                            </Grid>
+                            
+                            <BoxView HeightRequest="1" Color="{StaticResource Secondary}" Margin="0,5" />
+                            
+                            <!-- Thông tin -->
+                            <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="25, *" RowSpacing="5">
+                                <Label Grid.Row="0" Grid.Column="0" Text="{x:Static fonts:IconFont.MapMarker}" FontFamily="MaterialDesignIcons" TextColor="{StaticResource TextSecondary}" FontSize="16" />
+                                <Label Grid.Row="0" Grid.Column="1" Text="{Binding DiaChiGiaoHang}" TextColor="{StaticResource TextSecondary}" />
+                                
+                                <Label Grid.Row="1" Grid.Column="0" Text="{x:Static fonts:IconFont.Account}" FontFamily="MaterialDesignIcons" TextColor="{StaticResource TextSecondary}" FontSize="16" />
+                                <Label Grid.Row="1" Grid.Column="1" Text="{Binding OrderDate, StringFormat='Ngày đặt: {0:dd/MM/yyyy HH:mm}'}" TextColor="{StaticResource TextSecondary}" />
+                            </Grid>
+                            
+                            <!-- Footer Đơn hàng -->
+                            <Grid ColumnDefinitions="*, Auto" Margin="0,5,0,0">
+                                <Label Grid.Column="0" Text="Tổng thanh toán:" TextColor="{StaticResource TextSecondary}" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="{Binding TotalAmount, StringFormat='{0:N0} đ'}" FontAttributes="Bold" FontSize="18" TextColor="{StaticResource Error}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
+                    <Label Text="{x:Static fonts:IconFont.ClipboardList}" FontFamily="MaterialDesignIcons" FontSize="60" TextColor="{StaticResource TextSecondary}" HorizontalOptions="Center" />
+                    <Label Text="Bạn chưa có đơn hàng nào." HorizontalOptions="Center" TextColor="{StaticResource TextSecondary}" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+        </CollectionView>
+    </Grid>
+</ContentPage>

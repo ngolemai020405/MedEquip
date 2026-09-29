@@ -1,0 +1,79 @@
+@using Newtonsoft.Json.Linq
+@model JArray
+@{
+    ViewData["Title"] = "Quản lý Người dùng";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-primary"><i class="bi bi-people-fill me-2"></i>Quản lý Người dùng</h3>
+</div>
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-secondary">
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>SĐT</th>
+                        <th>Vai trò</th>
+                        <th>Ngày tạo</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        var isAct = (bool)user["trangThai"];
+                        <tr>
+                            <td class="ps-4 fw-medium text-muted">#@user["userId"]</td>
+                            <td class="fw-semibold text-dark">@user["hoTen"]</td>
+                            <td>@user["email"]</td>
+                            <td>@user["sdt"]</td>
+                            <td><span class="badge bg-info text-dark rounded-pill px-3">@user["roleName"]</span></td>
+                            <td>@Convert.ToDateTime(user["ngayTao"]).ToString("dd/MM/yyyy")</td>
+                            <td class="text-center">
+                                @if (isAct)
+                                {
+                                    <span class="badge bg-success rounded-pill"><i class="bi bi-check-circle me-1"></i>Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger rounded-pill"><i class="bi bi-x-circle me-1"></i>Đã khóa</span>
+                                }
+                            </td>
+                            <td class="text-center pe-4">
+                                @{
+                                    var currentRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                                    var targetRole = user["roleName"]?.ToString();
+                                    
+                                    bool canView = currentRole == "Admin" || targetRole != "Admin";
+                                    bool canLock = (currentRole == "Admin" && targetRole != "Admin") || (currentRole != "Admin" && targetRole != "Admin" && targetRole != currentRole);
+                                }
+                                <div class="d-flex justify-content-center gap-2">
+                                    @if (canView)
+                                    {
+                                        <a asp-action="Details" asp-route-id="@user["userId"]" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="bi bi-eye"></i> Chi tiết
+                                        </a>
+                                    }
+                                    @if (canLock)
+                                    {
+                                        <form asp-action="ToggleStatus" asp-route-id="@user["userId"]" method="post" class="d-inline">
+                                            <button class="btn btn-sm @(isAct ? "btn-outline-danger" : "btn-outline-success") rounded-pill px-3" 
+                                                    onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?');">
+                                                <i class="bi @(isAct ? "bi-lock" : "bi-unlock")"></i>
+                                                @(isAct ? "Khóa" : "Mở khóa")
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

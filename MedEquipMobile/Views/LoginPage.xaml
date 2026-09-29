@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:MedEquipMobile.ViewModels"
+             xmlns:fonts="clr-namespace:MedEquipMobile.Resources.Fonts"
+             x:Class="MedEquipMobile.Views.LoginPage"
+             Title="Đăng nhập"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="{StaticResource Primary}" Offset="0.0" />
+            <GradientStop Color="{StaticResource Accent}" Offset="1.0" />
+        </LinearGradientBrush>
+    </ContentPage.Background>
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto,*" Padding="30" RowSpacing="30" VerticalOptions="FillAndExpand">
+            
+            <VerticalStackLayout Grid.Row="0" Spacing="10" Margin="0,50,0,0">
+                <Label Text="{x:Static fonts:IconFont.Account}" 
+                       FontFamily="MaterialDesignIcons" 
+                       FontSize="80" 
+                       TextColor="White" 
+                       HorizontalOptions="Center"/>
+                <Label Text="MedEquip"
+                       FontSize="32"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" />
+                <Label Text="Hệ thống cung cấp thiết bị y tế"
+                       FontSize="16"
+                       TextColor="{StaticResource LightAccent}"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <Border Grid.Row="1" StrokeShape="RoundRectangle 20" Stroke="Transparent" BackgroundColor="White" Padding="25">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,10" Radius="20" Opacity="0.2" />
+                </Border.Shadow>
+                
+                <VerticalStackLayout Spacing="20">
+                    <Label Text="ĐĂNG NHẬP" FontSize="20" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" HorizontalOptions="Center" Margin="0,0,0,10"/>
+                    
+                    <Border StrokeShape="RoundRectangle 10" Stroke="{StaticResource Secondary}" StrokeThickness="1" BackgroundColor="{StaticResource Background}">
+                        <Grid ColumnDefinitions="40, *">
+                            <Label Grid.Column="0" Text="{x:Static fonts:IconFont.Email}" FontFamily="MaterialDesignIcons" FontSize="20" TextColor="{StaticResource TextSecondary}" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Entry Grid.Column="1" Placeholder="Email của bạn" Text="{Binding Email}" Keyboard="Email" BackgroundColor="Transparent" />
+                        </Grid>
+                    </Border>
+
+                    <Border StrokeShape="RoundRectangle 10" Stroke="{StaticResource Secondary}" StrokeThickness="1" BackgroundColor="{StaticResource Background}">
+                        <Grid ColumnDefinitions="40, *">
+                            <Label Grid.Column="0" Text="{x:Static fonts:IconFont.Lock}" FontFamily="MaterialDesignIcons" FontSize="20" TextColor="{StaticResource TextSecondary}" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Entry Grid.Column="1" Placeholder="Mật khẩu" Text="{Binding Password}" IsPassword="True" BackgroundColor="Transparent" />
+                        </Grid>
+                    </Border>
+
+                    <Button Text="Đăng Nhập"
+                            Command="{Binding LoginCommand}"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            HeightRequest="50"
+                            CornerRadius="10"
+                            Margin="0,10,0,0">
+                        <Button.Shadow>
+                            <Shadow Brush="{StaticResource Primary}" Offset="0,5" Radius="10" Opacity="0.4"/>
+                        </Button.Shadow>
+                    </Button>
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" Color="{StaticResource Primary}"/>
+                </VerticalStackLayout>
+            </Border>
+            
+        </Grid>
+    </ScrollView>
+</ContentPage>

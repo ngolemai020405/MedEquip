@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:MedEquipMobile.Models"
+             xmlns:fonts="clr-namespace:MedEquipMobile.Resources.Fonts"
+             x:Class="MedEquipMobile.Views.HomePage"
+             Title="Trang chủ MedEquip"
+             BackgroundColor="{StaticResource Background}">
+             
+    <ContentPage.ToolbarItems>
+        <ToolbarItem IconImageSource="{FontImage FontFamily=MaterialDesignIcons, Glyph={x:Static fonts:IconFont.Magnify}, Color=White, Size=24}" Command="{Binding LoadDataCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="15" Spacing="20">
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource Primary}"/>
+            
+            <!-- Hero Banner -->
+            <Border StrokeShape="RoundRectangle 15" Stroke="Transparent" BackgroundColor="{StaticResource Primary}" HeightRequest="120" Padding="20">
+                <Grid ColumnDefinitions="*, Auto">
+                    <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="5">
+                        <Label Text="Chào mừng bạn," TextColor="{StaticResource LightAccent}" FontSize="14" />
+                        <Label Text="Khám phá thiết bị Y tế tốt nhất" TextColor="White" FontSize="18" FontAttributes="Bold" MaxLines="2" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="1" Text="{x:Static fonts:IconFont.CheckCircle}" FontFamily="MaterialDesignIcons" FontSize="60" TextColor="{StaticResource LightAccent}" Opacity="0.3" VerticalOptions="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- Recommended Products -->
+            <Grid ColumnDefinitions="*, Auto" Margin="0,10,0,0">
+                <Label Grid.Column="0" Text="Gợi ý dành cho bạn" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" />
+                <Label Grid.Column="1" Text="Xem tất cả" FontSize="14" TextColor="{StaticResource Accent}" VerticalOptions="Center" />
+            </Grid>
+            
+            <CollectionView ItemsSource="{Binding RecommendedProducts}" HeightRequest="250">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="15" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Product">
+                        <Border StrokeShape="RoundRectangle 15" Stroke="Transparent" BackgroundColor="White" WidthRequest="170" Padding="15">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,5" Radius="10" Opacity="0.1"/>
+                            </Border.Shadow>
+                            <Grid RowDefinitions="100, Auto, *, Auto" RowSpacing="5">
+                                <Image Grid.Row="0" Source="dotnet_bot.png" HeightRequest="100" Aspect="AspectFit"/>
+                                <Label Grid.Row="1" Text="{Binding Name}" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" MaxLines="2" LineBreakMode="TailTruncation" />
+                                <Label Grid.Row="2" Text="{Binding FinalPrice, StringFormat='{0:N0} đ'}" TextColor="{StaticResource Primary}" FontAttributes="Bold" FontSize="16" />
+                                
+                                <Button Grid.Row="3" Text="Thêm vào giỏ" 
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AddToCartCommand}" 
+                                        CommandParameter="{Binding .}" 
+                                        BackgroundColor="{StaticResource LightAccent}" 
+                                        TextColor="{StaticResource Primary}" 
+                                        FontAttributes="Bold" 
+                                        CornerRadius="8" 
+                                        HeightRequest="40" 
+                                        Margin="0,5,0,0"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Latest Products -->
+            <Label Text="Sản phẩm mới" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" Margin="0,10,0,0"/>
+            <CollectionView ItemsSource="{Binding LatestProducts}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="15" VerticalItemSpacing="15" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Product">
+                        <Border StrokeShape="RoundRectangle 15" Stroke="Transparent" BackgroundColor="White" Padding="15">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,5" Radius="10" Opacity="0.1"/>
+                            </Border.Shadow>
+                            <Grid RowDefinitions="100, Auto, *, Auto" RowSpacing="5">
+                                <Image Grid.Row="0" Source="dotnet_bot.png" HeightRequest="100" Aspect="AspectFit"/>
+                                <Label Grid.Row="1" Text="{Binding Name}" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" MaxLines="2" LineBreakMode="TailTruncation" />
+                                <Label Grid.Row="2" Text="{Binding FinalPrice, StringFormat='{0:N0} đ'}" TextColor="{StaticResource Primary}" FontAttributes="Bold" FontSize="16" />
+                                
+                                <Button Grid.Row="3" Text="{x:Static fonts:IconFont.Cart}" 
+                                        FontFamily="MaterialDesignIcons"
+                                        FontSize="20"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AddToCartCommand}" 
+                                        CommandParameter="{Binding .}" 
+                                        BackgroundColor="{StaticResource Primary}" 
+                                        TextColor="White" 
+                                        CornerRadius="8" 
+                                        HeightRequest="40" 
+                                        Margin="0,5,0,0"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

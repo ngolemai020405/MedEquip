@@ -1,0 +1,133 @@
+@model RegisterVM
+@{ ViewData["Title"] = "Đăng ký"; }
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <h4 class="text-center mb-3">Đăng ký tài khoản</h4>
+            @if (ViewBag.Loi != null) { <div class="alert alert-danger">@Html.Raw(ViewBag.Loi)</div> }
+            <form asp-action="Register" method="post">
+                <div class="mb-3"><label class="form-label">Họ tên</label><input asp-for="HoTen" class="form-control" required /></div>
+                <div class="mb-3"><label class="form-label">Email</label>
+                    <div class="input-group">
+                        <input asp-for="Email" id="emailInput" class="form-control" required />
+                        <button type="button" id="btnSendOtp" class="btn btn-outline-secondary">Gửi mã OTP</button>
+                    </div>
+                </div>
+                <div class="mb-3"><label class="form-label">Mã OTP</label><input asp-for="Otp" class="form-control" required /></div>
+                <div class="mb-3"><label class="form-label">Mật khẩu</label><input asp-for="MatKhau" type="password" class="form-control" required /></div>
+                <div class="mb-3"><label class="form-label">Số điện thoại</label><input asp-for="SDT" class="form-control" /></div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tỉnh/Thành phố</label>
+                        <select asp-for="TinhId" class="form-select" id="tinhSelect" required>
+                            <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                            @if (ViewBag.DanhSachTinh != null)
+                            {
+                                foreach (var t in (List<Newtonsoft.Json.Linq.JObject>)ViewBag.DanhSachTinh)
+                                {
+                                    <option value="@t["tinhId"]">@t["tenTinh"]</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Xã/Phường</label>
+                        <select asp-for="PhuongXaId" class="form-select" id="phuongXaSelect" required>
+                            <option value="">-- Chọn Tỉnh/Thành phố trước --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Số nhà, tên đường</label>
+                    <input asp-for="SoNhaTenDuong" class="form-control" placeholder="Ví dụ: 123 Đường ABC" required />
+                </div>
+                <button class="btn btn-primary w-100">Đăng ký</button>
+            </form>
+            <p class="mt-2 mb-0">Đã có tài khoản? <a asp-action="Login">Đăng nhập</a></p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('btnSendOtp').addEventListener('click', async function () {
+            var email = document.getElementById('emailInput').value;
+            if (!email) {
+                alert('Vui lòng nhập email trước khi gửi mã OTP.');
+                return;
+            }
+            this.disabled = true;
+            this.innerText = 'Đang gửi...';
+            try {
+                // Call Backend.API directly or through WebClient API. 
+                // Since Backend.API is usually on port 7001, we fetch it.
+                var res = await fetch('https://localhost:7001/api/auth/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                var data = await res.json();
+                if (res.ok) {
+                    alert('Đã gửi mã OTP đến email của bạn.');
+                    let countdown = 60;
+                    let btn = this;
+                    let interval = setInterval(() => {
+                        countdown--;
+                        btn.innerText = `Gửi lại sau ${countdown}s`;
+                        if (countdown <= 0) {
+                            clearInterval(interval);
+                            btn.innerText = 'Gửi lại mã OTP';
+                            btn.disabled = false;
+                        }
+                    }, 1000);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể gửi OTP.'));
+                    this.disabled = false;
+                    this.innerText = 'Gửi mã OTP';
+                }
+            } catch (err) {
+                alert('Có lỗi xảy ra khi kết nối máy chủ.');
+                this.disabled = false;
+                this.innerText = 'Gửi mã OTP';
+            }
+        });
+
+        async function loadPhuongXa(tinhId) {
+            var phuongXaSelect = document.getElementById('phuongXaSelect');
+            phuongXaSelect.innerHTML = '<option value="">-- Đang tải... --</option>';
+            if (!tinhId) {
+                phuongXaSelect.innerHTML = '<option value="">-- Chọn Tỉnh/Thành phố trước --</option>';
+                return;
+            }
+            try {
+                var res = await fetch('/Cart/PhuongXaTheoTinh?tinhId=' + tinhId);
+                var data = await res.json();
+                phuongXaSelect.innerHTML = '<option value="">-- Chọn Xã/Phường --</option>';
+                data.forEach(function (px) {
+                    var opt = document.createElement('option');
+                    opt.value = px.phuongXaId;
+                    opt.textContent = px.tenPhuongXa;
+                    phuongXaSelect.appendChild(opt);
+                });
+            } catch (e) {
+                phuongXaSelect.innerHTML = '<option value="">-- Lỗi tải dữ liệu, thử lại --</option>';
+            }
+        }
+
+        document.getElementById('tinhSelect').addEventListener('change', function () {
+            loadPhuongXa(this.value);
+        });
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            var initialTinhId = document.getElementById('tinhSelect').value;
+            var initialPhuongXaId = '@Model?.PhuongXaId';
+            
+            if (initialTinhId) {
+                await loadPhuongXa(initialTinhId);
+                if (initialPhuongXaId && initialPhuongXaId != '0' && initialPhuongXaId != '') {
+                    document.getElementById('phuongXaSelect').value = initialPhuongXaId;
+                }
+            }
+        });
+    </script>
+}

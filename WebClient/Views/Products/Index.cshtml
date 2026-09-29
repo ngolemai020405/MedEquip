@@ -1,0 +1,188 @@
+@model JObject
+@{ ViewData["Title"] = "Sản phẩm"; }
+<div class="row g-4">
+    <div class="col-lg-3">
+        <form method="get" asp-action="Index">
+            <input type="hidden" name="keyword" value="@ViewBag.Keyword" />
+            <input type="hidden" name="categoryId" value="@ViewBag.CategoryId" />
+            <input type="hidden" name="sortOrder" value="@ViewBag.SortOrder" />
+            <div class="sticky-top overflow-y-auto" style="top: 80px; z-index: 10; max-height: calc(100vh - 100px);">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-list-stars text-primary me-2"></i>Danh mục</h5>
+                </div>
+                <div class="card-body p-4">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3">
+                            <a asp-action="Index" asp-route-minPrice="@ViewBag.MinPrice" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-keyword="@ViewBag.Keyword" asp-route-sortOrder="@ViewBag.SortOrder" class="text-decoration-none fw-bold @(ViewBag.CategoryId == null ? "text-primary" : "text-dark hover-primary")">
+                                <i class="bi bi-grid-fill me-2"></i>Tất cả sản phẩm
+                            </a>
+                        </li>
+                        @foreach (var c in (List<JObject>)ViewBag.DanhMuc)
+                        {
+                            <li class="mb-3">
+                                <a asp-action="Index" asp-route-categoryId="@c["categoryId"]" asp-route-minPrice="@ViewBag.MinPrice" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-keyword="@ViewBag.Keyword" asp-route-sortOrder="@ViewBag.SortOrder" class="text-decoration-none fw-bold text-dark hover-primary d-flex justify-content-between align-items-center">
+                                    <span>@c["tenDanhMuc"]</span>
+                                    @if (c["danhMucCon"]!.Any()) { <i class="bi bi-chevron-down small text-muted"></i> }
+                                </a>
+                                <ul class="list-unstyled ms-3 mt-2 border-start border-2 border-primary border-opacity-25 ps-3">
+                                    @foreach (var con in c["danhMucCon"]!)
+                                    {
+                                        <li class="mb-2">
+                                            <a asp-action="Index" asp-route-categoryId="@con["categoryId"]" asp-route-minPrice="@ViewBag.MinPrice" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-keyword="@ViewBag.Keyword" asp-route-sortOrder="@ViewBag.SortOrder" class="text-decoration-none small text-muted hover-primary">
+                                                @con["tenDanhMuc"]
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 mb-3">
+                    <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-funnel text-primary me-2"></i>Lọc theo giá</h5>
+                </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <select id="priceDropdown" class="form-select form-select-sm" onchange="setPriceRange(this.value)">
+                                <option value="">-- Mức giá --</option>
+                                <option value="0-1000000">Dưới 1 triệu</option>
+                                <option value="1000000-5000000">Từ 1 - 5 triệu</option>
+                                <option value="5000000-10000000">Từ 5 - 10 triệu</option>
+                                <option value="10000000-">Trên 10 triệu</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Giá từ</label>
+                            <input type="number" name="minPrice" id="minPrice" class="form-control form-control-sm" value="@ViewBag.MinPrice" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Đến</label>
+                            <input type="number" name="maxPrice" id="maxPrice" class="form-control form-control-sm" value="@ViewBag.MaxPrice" />
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100 btn-rounded">Áp dụng</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold mb-0 text-dark">
+                Kết quả @(ViewBag.Keyword != null ? $"tìm kiếm cho \"{ViewBag.Keyword}\"" : "sản phẩm")
+            </h4>
+        </div>
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-body py-2 px-3 d-flex flex-wrap align-items-center justify-content-between">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="text-muted fw-medium me-2">Sắp xếp:</span>
+                    @{
+                        string GetSortClass(string? sort) => ViewBag.SortOrder == sort || (string.IsNullOrEmpty(ViewBag.SortOrder) && sort == "") ? "btn-primary" : "btn-outline-secondary bg-white border-light text-dark";
+                        string BuildUrl(string? sort) => Url.Action("Index", new { categoryId = ViewBag.CategoryId, minPrice = ViewBag.MinPrice, maxPrice = ViewBag.MaxPrice, keyword = ViewBag.Keyword, sortOrder = sort }) ?? "#";
+                    }
+                    <a href="@BuildUrl("")" class="btn btn-sm rounded-1 shadow-sm @GetSortClass("")">Mặc định</a>
+                    <a href="@BuildUrl("name_asc")" class="btn btn-sm rounded-1 shadow-sm @GetSortClass("name_asc")">Tên A-Z</a>
+                    <a href="@BuildUrl("name_desc")" class="btn btn-sm rounded-1 shadow-sm @GetSortClass("name_desc")">Tên Z-A</a>
+                    <a href="@BuildUrl("price_asc")" class="btn btn-sm rounded-1 shadow-sm @GetSortClass("price_asc")">Giá tăng dần</a>
+                    <a href="@BuildUrl("price_desc")" class="btn btn-sm rounded-1 shadow-sm @GetSortClass("price_desc")">Giá giảm dần</a>
+                    <a href="@BuildUrl("newest")" class="btn btn-sm rounded-1 shadow-sm @GetSortClass("newest")">Mới nhất</a>
+                    <a href="@BuildUrl("oldest")" class="btn btn-sm rounded-1 shadow-sm @GetSortClass("oldest")">Cũ nhất</a>
+                </div>
+                <div class="text-muted small mt-2 mt-md-0 fw-medium">
+                    @(Model != null ? Model["total"] : 0) Sản phẩm
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            @if (Model != null && Model["items"]!.Any())
+            {
+                foreach (var p in Model["items"]!)
+                {
+                    <div class="col-md-4 col-6">
+                        <div class="card card-product h-100 rounded-4">
+                            <div class="position-relative">
+                                <img src="@(p["hinhAnh"] ?? "/images/no-image.png")" class="card-img-top" style="object-fit: cover; height: 200px; padding: 1rem;" />
+                                @if ((int)p["soLuongTon"]! == 0)
+                                {
+                                    <span class="badge bg-secondary position-absolute top-0 end-0 m-3 rounded-pill">Hết hàng</span>
+                                }
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <div class="text-muted small mb-1 text-truncate" title="@p["tenDanhMuc"]">@p["tenDanhMuc"]</div>
+                                <h6 class="fw-bold text-dark mb-2 text-truncate" title="@p["tenSP"]">@p["tenSP"]</h6>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="text-warning small me-2">
+                                        <i class="bi bi-star-fill"></i> @(((double)p["diemDanhGiaTB"]!).ToString("0.0"))
+                                    </div>
+                                    <div class="small text-muted border-start ps-2">Còn @p["soLuongTon"]</div>
+                                </div>
+                                <div class="mt-auto">
+                                    <div class="fw-bold fs-5 text-primary mb-3">@(Convert.ToDecimal(p["gia"]).ToString("N0")) đ</div>
+                                    <a class="btn btn-outline-primary btn-rounded w-100 fw-medium" asp-action="Detail" asp-route-id="@p["productId"]">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        @if (Model != null && Model["items"]!.Any() == false)
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+                <h5 class="fw-bold mt-3 text-dark">Không tìm thấy sản phẩm</h5>
+                <p class="text-muted">Vui lòng thử lại với từ khóa hoặc danh mục khác.</p>
+                <a asp-action="Index" class="btn btn-primary btn-rounded px-4 mt-2">Xem tất cả sản phẩm</a>
+            </div>
+        }
+        else if (Model != null && Model["items"]!.Any())
+        {
+            var totalItems = (int)Model["total"]!;
+            var pageSize = (int)Model["pageSize"]!;
+            var currentPage = (int)Model["page"]!;
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            if (totalPages > 1)
+            {
+                <div class="d-flex justify-content-center mt-5">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-rounded shadow-sm">
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(currentPage - 1)" asp-route-keyword="@ViewBag.Keyword" asp-route-categoryId="@ViewBag.CategoryId" asp-route-minPrice="@ViewBag.MinPrice" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-sortOrder="@ViewBag.SortOrder">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(currentPage == i ? "active" : "")">
+                                    <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-keyword="@ViewBag.Keyword" asp-route-categoryId="@ViewBag.CategoryId" asp-route-minPrice="@ViewBag.MinPrice" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-sortOrder="@ViewBag.SortOrder">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(currentPage + 1)" asp-route-keyword="@ViewBag.Keyword" asp-route-categoryId="@ViewBag.CategoryId" asp-route-minPrice="@ViewBag.MinPrice" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-sortOrder="@ViewBag.SortOrder">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+    </div>
+</div>
+@section Scripts {
+<script>
+    function setPriceRange(val) {
+        if(!val) {
+            document.getElementById('minPrice').value = '';
+            document.getElementById('maxPrice').value = '';
+            return;
+        }
+        const parts = val.split('-');
+        document.getElementById('minPrice').value = parts[0] || '';
+        document.getElementById('maxPrice').value = parts[1] || '';
+    }
+</script>
+}

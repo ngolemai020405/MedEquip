@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MedEquip</title>
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+</head>
+<body class="d-flex flex-column min-vh-100">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-primary d-flex align-items-center" asp-controller="Home" asp-action="Index">
+            <div class="bg-primary text-white rounded p-1 me-2 d-flex align-items-center justify-content-center" style="width:32px; height:32px;">
+                <i class="bi bi-heart-pulse-fill"></i>
+            </div>
+            MedEquip
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <form asp-controller="Products" asp-action="Index" method="get" class="d-flex flex-fill mx-lg-5 my-3 my-lg-0">
+                <div class="input-group search-bar w-100">
+                    <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm thiết bị y tế..." aria-label="Search" />
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+            <div class="d-flex align-items-center gap-4">
+                <a class="text-dark text-decoration-none nav-icon-link d-flex align-items-center" asp-controller="Cart" asp-action="Index">
+                    <i class="bi bi-cart3 fs-4 me-1"></i>
+                    <span class="d-none d-xl-inline">Giỏ hàng</span>
+                </a>
+                @if (Context.Session.GetString("Token") != null)
+                {
+                    <a class="text-dark text-decoration-none nav-icon-link d-flex align-items-center" asp-controller="Orders" asp-action="Index">
+                        <i class="bi bi-receipt fs-4 me-1"></i>
+                        <span class="d-none d-xl-inline">Đơn hàng</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="text-dark text-decoration-none nav-icon-link d-flex align-items-center dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://ui-avatars.com/api/?name=@(Context.Session.GetString("HoTen"))&background=f0f0f0&color=333" width="32" height="32" class="rounded-circle me-2">
+                            <span class="fw-medium text-truncate" style="max-width: 100px;">@Context.Session.GetString("HoTen")</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-3">
+                            <li><a class="dropdown-item py-2" asp-controller="Account" asp-action="Profile"><i class="bi bi-person me-2"></i>Hồ sơ cá nhân</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger" asp-controller="Account" asp-action="Logout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-outline-primary btn-rounded px-4" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                        <a class="btn btn-primary btn-rounded px-4" asp-controller="Account" asp-action="Register">Đăng ký</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="flex-grow-1">
+    <div class="container my-4 py-2">
+        @if (TempData["Thanhcong"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> @TempData["Thanhcong"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @RenderBody()
+    </div>
+</div>
+<footer class="footer-premium mt-auto">
+    <div class="container">
+        <div class="row g-4 mb-4">
+            <div class="col-lg-4">
+                <h5 class="text-white mb-3 fw-bold d-flex align-items-center">
+                    <div class="bg-primary text-white rounded p-1 me-2 d-inline-flex align-items-center justify-content-center" style="width:28px; height:28px;">
+                        <i class="bi bi-heart-pulse-fill" style="font-size: 0.9rem;"></i>
+                    </div>
+                    MedEquip Shop
+                </h5>
+                <p class="small text-white-50 pe-lg-4">Hệ thống thương mại điện tử chuyên cung cấp trang thiết bị y tế chính hãng, chất lượng cao với dịch vụ tận tâm.</p>
+            </div>
+            <div class="col-lg-2 col-6">
+                <h6 class="text-white mb-3">Chính sách</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-primary">Chính sách bảo mật</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-primary">Điều khoản dịch vụ</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-primary">Chính sách đổi trả</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-3 col-6">
+                <h6 class="text-white mb-3">Hỗ trợ khách hàng</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-primary">Trung tâm trợ giúp</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-primary">Hướng dẫn mua hàng</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-primary">Theo dõi đơn hàng</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-3">
+                <h6 class="text-white mb-3">Liên hệ</h6>
+                <ul class="list-unstyled small mb-0 text-white-50">
+                    <li class="mb-2"><i class="bi bi-geo-alt me-2 text-primary"></i> 123 Đường Y Tế, Quận 1, TP.HCM</li>
+                    <li class="mb-2"><i class="bi bi-telephone me-2 text-primary"></i> Hotline: 1900 1234</li>
+                    <li class="mb-2"><i class="bi bi-envelope me-2 text-primary"></i> support@medequip.vn</li>
+                </ul>
+            </div>
+        </div>
+        <hr class="border-secondary opacity-25 my-4">
+        <div class="text-center small text-white-50">
+            &copy; 2026 - Đồ án Khóa luận CNTT-KLCN106. Xây dựng Website mua bán trang thiết bị y tế.
+        </div>
+    </div>
+</footer>
+<script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@if (TempData["ToastMessage"] != null)
+{
+    <script>
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '@TempData["ToastMessage"]',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            customClass: { popup: 'rounded-4' }
+        });
+    </script>
+}
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,50 @@
+@model CategoryVM
+@{ ViewData["Title"] = "Sửa Danh mục"; }
+<h3>Sửa Danh mục</h3>
+@if (ViewBag.Loi != null) { <div class="alert alert-danger">@ViewBag.Loi</div> }
+<div class="card p-4" style="max-width:500px">
+    <form asp-action="Edit" asp-route-id="@Model.CategoryId" method="post">
+        <input type="hidden" asp-for="CategoryId" />
+        <div class="mb-3">
+            <label class="form-label">Tên Danh mục</label>
+            <input asp-for="TenDanhMuc" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Mô tả</label>
+            <textarea asp-for="MoTa" class="form-control"></textarea>
+        </div>
+        <button class="btn btn-primary">Lưu</button>
+        <a class="btn btn-secondary" asp-action="Index">Huy</a>
+    </form>
+</div>
+@if (Model.DanhMucChaId == null)
+{
+    <div class="card p-4 mt-4" style="max-width:500px">
+        <h5>Danh mục con</h5>
+        @if (ViewBag.DanhMucCon != null)
+        {
+            <ul class="list-group mb-3">
+            @foreach(var con in (List<Newtonsoft.Json.Linq.JObject>)ViewBag.DanhMucCon)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    @con["tenDanhMuc"]
+                    <form asp-action="Delete" asp-route-id="@con["categoryId"]" method="post" style="display:inline" onsubmit="return confirm('Xóa Danh mục con này?')">
+                        <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                    </form>
+                </li>
+            }
+            </ul>
+        }
+        else
+        {
+            <p class="text-muted">Chưa có danh mục con nào.</p>
+        }
+        <hr />
+        <h6>Thêm danh mục con mới</h6>
+        <form asp-action="Create" method="post" class="d-flex gap-2">
+            <input type="hidden" name="DanhMucChaId" value="@Model.CategoryId" />
+            <input type="text" name="TenDanhMuc" class="form-control" placeholder="Tên danh mục con..." required />
+            <button class="btn btn-success text-nowrap">Thêm nhanh</button>
+        </form>
+    </div>
+}

@@ -1,0 +1,114 @@
+@using Newtonsoft.Json.Linq
+@model JObject
+@{
+    ViewData["Title"] = "Chi tiết Người dùng";
+    var user = Model["user"];
+    var orders = (JArray)Model["orders"]!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-primary"><i class="bi bi-person-lines-fill me-2"></i>Chi tiết Khách hàng</h3>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Quay lại</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+                <h5 class="fw-bold text-dark mb-0">Thông tin cá nhân</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="bi bi-person-fill fs-1"></i>
+                    </div>
+                    <h5 class="fw-bold mt-3 mb-1">@user?["hoTen"]</h5>
+                    <span class="badge bg-info text-dark rounded-pill">@user?["roleName"]</span>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <span class="text-muted">ID:</span>
+                        <span class="fw-medium">#@user?["userId"]</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Email:</span>
+                        <span class="fw-medium">@user?["email"]</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center border-bottom-0">
+                        <span class="text-muted">Số điện thoại:</span>
+                        <span class="fw-medium">@(user?["sdt"] ?? "N/A")</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold text-dark mb-0">Lịch sử Đơn hàng</h5>
+                <span class="badge bg-primary rounded-pill">@orders.Count đơn hàng</span>
+            </div>
+            <div class="card-body p-4">
+                @if (orders.Count > 0)
+                {
+                    <div class="accordion" id="ordersAccordion">
+                        @for (int i = 0; i < orders.Count; i++)
+                        {
+                            var order = orders[i];
+                            var isCollapsed = i != 0 ? "collapsed" : "";
+                            var showClass = i == 0 ? "show" : "";
+                            
+                            <div class="accordion-item border-0 mb-3 rounded-4 shadow-sm overflow-hidden">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button @isCollapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#order-@order["orderId"]">
+                                        <div class="d-flex justify-content-between w-100 pe-3 align-items-center">
+                                            <span><i class="bi bi-receipt me-2 text-primary"></i> Đơn hàng #@order["orderId"]</span>
+                                            <span class="text-danger fw-bold">@Convert.ToDecimal(order["tongTien"]).ToString("N0") đ</span>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="order-@order["orderId"]" class="accordion-collapse collapse @showClass" data-bs-parent="#ordersAccordion">
+                                    <div class="accordion-body">
+                                        <div class="d-flex justify-content-between mb-3 text-muted small">
+                                            <span>Ngày đặt: @Convert.ToDateTime(order["ngayDat"]).ToString("dd/MM/yyyy HH:mm")</span>
+                                            <span>Trạng thái: @order["trangThai"]</span>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-borderless align-middle mb-0">
+                                                <thead class="table-light text-muted">
+                                                    <tr>
+                                                        <th>Sản phẩm</th>
+                                                        <th class="text-center">Số lượng</th>
+                                                        <th class="text-end">Đơn giá</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in order["items"]!)
+                                                    {
+                                                        <tr>
+                                                            <td class="fw-medium">@item["tenSP"]</td>
+                                                            <td class="text-center">@item["soLuong"]</td>
+                                                            <td class="text-end">@Convert.ToDecimal(item["donGia"]).ToString("N0") đ</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-bag-x fs-1 mb-3 d-block"></i>
+                        <p>Khách hàng này chưa có đơn hàng nào.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

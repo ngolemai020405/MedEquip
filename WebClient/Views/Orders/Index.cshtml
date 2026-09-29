@@ -1,0 +1,134 @@
+@model List<JObject>
+@{ ViewData["Title"] = "Đơn hàng của tôi"; }
+
+<style>
+    .order-card { border: 1px solid #e0e0e0; border-radius: 4px; background: #fff; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .order-header { border-bottom: 1px solid #f1f1f1; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .shop-info { display: flex; align-items: center; font-weight: 500; }
+    .shop-info i { color: #ee4d2d; margin-right: 8px; font-size: 1.1rem; }
+    .order-status { color: #ee4d2d; text-transform: uppercase; font-weight: 500; font-size: 0.9rem; }
+    .order-product { display: flex; padding: 16px 24px; border-bottom: 1px solid #f9f9f9; text-decoration: none; color: inherit; }
+    .order-product:hover { background-color: #fafafa; }
+    .product-img { width: 80px; height: 80px; object-fit: contain; border: 1px solid #e1e1e1; margin-right: 15px; background: #fff; }
+    .product-details { flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .product-name { font-size: 1rem; color: #333; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .product-meta { color: #757575; font-size: 0.85rem; }
+    .product-price { color: #ee4d2d; font-weight: 500; }
+    .order-footer { background-color: #fff; padding: 20px 24px; text-align: right; }
+    .order-total-row { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 16px; }
+    .order-total-label { color: #333; font-size: 0.95rem; margin-right: 10px; }
+    .order-total-value { color: #ee4d2d; font-size: 1.5rem; font-weight: 500; }
+    .order-actions .btn { min-width: 130px; padding: 8px 15px; border-radius: 2px; font-weight: 500; font-size: 0.9rem; margin-left: 10px; }
+    .btn-shopee-primary { background-color: #ee4d2d; color: #fff; border: 1px solid #ee4d2d; }
+    .btn-shopee-primary:hover { background-color: #d73211; color: #fff; }
+    .btn-shopee-outline { background-color: #fff; color: #555; border: 1px solid #ccc; }
+    .btn-shopee-outline:hover { background-color: #f8f8f8; color: #555; border-color: #bbb; }
+    
+    /* Header action links */
+    .shop-actions .badge { font-weight: normal; font-size: 0.75rem; padding: 4px 8px; cursor: pointer; }
+    .bg-shopee-light { background-color: #ffeee8; color: #ee4d2d; border: 1px solid #ee4d2d; }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <h4 class="mb-4 text-dark fw-bold">Đơn hàng của tôi</h4>
+        
+        @if (Model.Count == 0)
+        {
+            <div class="text-center py-5 bg-white shadow-sm rounded">
+                <i class="bi bi-receipt fs-1 text-muted mb-3 d-block"></i>
+                <h5 class="text-muted">Chưa có đơn hàng</h5>
+            </div>
+        }
+        else
+        {
+            @foreach (var o in Model)
+            {
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="shop-info">
+                            <i class="bi bi-shop"></i> MedEquip Store
+                        </div>
+                        <div class="order-status d-flex align-items-center">
+                            @if(o["trangThai"]?.ToString() == "DaGiao")
+                            {
+                                <span class="text-success me-2 d-none d-md-inline border-end pe-2 border-secondary border-opacity-25" style="text-transform: none; font-size: 0.85rem;"><i class="bi bi-truck me-1"></i>Giao hàng thành công</span>
+                                <span>HOÀN THÀNH</span>
+                            }
+                            else if(o["trangThai"]?.ToString() == "DaHuy")
+                            {
+                                <span>ĐÃ HỦY</span>
+                            }
+                            else if(o["trangThai"]?.ToString() == "ChoXacNhan")
+                            {
+                                <span class="text-warning">CHỜ XÁC NHẬN</span>
+                            }
+                            else
+                            {
+                                <span class="text-primary">@o["trangThai"]</span>
+                            }
+                        </div>
+                    </div>
+
+                    @if (o["orderDetails"] != null)
+                    {
+                        foreach (var detail in o["orderDetails"])
+                        {
+                            var p = detail["product"];
+                            <a asp-action="Detail" asp-route-id="@o["orderId"]" class="order-product">
+                                <img src="@(p["hinhAnh"] ?? "/images/no-image.png")" class="product-img" alt="@p["tenSP"]" />
+                                <div class="product-details">
+                                    <div>
+                                        <div class="product-name">@p["tenSP"]</div>
+                                        <div class="product-meta">Phân loại hàng: Y tế chính hãng</div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-end mt-2">
+                                        <div class="product-meta">x@(detail["soLuong"])</div>
+                                        <div class="product-price">@(Convert.ToDecimal(detail["donGia"]).ToString("N0")) đ</div>
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    }
+
+                    <div class="order-footer" style="background-color: #fffefb;">
+                        <div class="order-total-row border-bottom pb-3 mb-3">
+                            <div class="order-total-label">Thành tiền:</div>
+                            <div class="order-total-value">@(Convert.ToDecimal(o["tongTien"]).ToString("N0")) đ</div>
+                        </div>
+                        <div class="order-actions d-flex justify-content-end align-items-center flex-wrap gap-2">
+                            @if (o["trangThai"]?.ToString() == "DaGiao")
+                            {
+                                <div class="me-auto text-start d-none d-md-block text-muted" style="font-size: 0.8rem;">
+                                    Đánh giá sản phẩm ngay để nhận điểm thưởng<br/>
+                                    <span class="text-danger">Đánh giá ngay</span>
+                                </div>
+                                <button class="btn btn-shopee-primary">Đánh Giá</button>
+                                <button class="btn btn-shopee-outline">Mua Lại</button>
+                            }
+                            else if (o["trangThai"]?.ToString() == "ChoXacNhan")
+                            {
+                                <form asp-action="Cancel" asp-route-id="@o["orderId"]" method="post" class="m-0" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?');">
+                                    <button type="submit" class="btn btn-shopee-primary">Hủy Đơn</button>
+                                </form>
+                            }
+                            else if (o["trangThai"]?.ToString() == "DaHuy")
+                            {
+                                <div class="me-auto text-start d-none d-md-block text-muted" style="font-size: 0.8rem;">
+                                    Đã hủy tự động hoặc bởi người mua
+                                </div>
+                                <button class="btn btn-shopee-primary">Mua Lại</button>
+                                <a asp-action="Detail" asp-route-id="@o["orderId"]" class="btn btn-shopee-outline">Xem Chi Tiết Hủy Đơn</a>
+                            }
+                            
+                            @if (o["trangThai"]?.ToString() != "DaHuy" && o["trangThai"]?.ToString() != "DaGiao")
+                            {
+                                <a asp-action="Detail" asp-route-id="@o["orderId"]" class="btn btn-shopee-outline">Xem Chi Tiết</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

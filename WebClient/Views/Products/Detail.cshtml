@@ -1,0 +1,278 @@
+@model JObject
+@{ ViewData["Title"] = Model["tenSP"]?.ToString(); }
+<div class="row">
+    <div class="col-md-5 text-center">
+        <img id="mainProductImg" src="@(Model["hinhAnh"] ?? "/images/no-image.png")" class="img-fluid rounded border w-100 mb-3" style="object-fit:contain; max-height:400px" />
+        @if (Model["productImages"] != null && ((Newtonsoft.Json.Linq.JArray)Model["productImages"]!).Count > 0)
+        {
+            <div class="d-flex gap-2 flex-wrap justify-content-center">
+                <img src="@(Model["hinhAnh"] ?? "/images/no-image.png")" class="rounded border border-primary p-1" style="width:70px;height:70px;object-fit:contain;cursor:pointer" onclick="document.getElementById('mainProductImg').src=this.src" />
+                @foreach (var img in (List<JObject>)((Newtonsoft.Json.Linq.JArray)Model["productImages"]!).ToObject(typeof(List<JObject>))!)
+                {
+                    <img src="@img["url"]" class="rounded border p-1" style="width:70px;height:70px;object-fit:contain;cursor:pointer" onclick="document.getElementById('mainProductImg').src=this.src" />
+                }
+            </div>
+        }
+    </div>
+    <div class="col-md-7">
+        <h3>@Model["tenSP"]</h3>
+        <div class="text-muted mb-2">Danh mục: @Model["category"]!["tenDanhMuc"] &middot; NCC: @Model["supplier"]!["tenNCC"]</div>
+        <div class="fs-3 text-danger fw-bold mb-3">@Convert.ToDecimal(Model["gia"]).ToString("N0") VNĐ</div>
+
+        <div class="d-flex gap-4 flex-wrap small text-muted mb-2">
+            @if (Model["hanSuDung"] != null && Model["hanSuDung"]!.Type != Newtonsoft.Json.Linq.JTokenType.Null)
+            {
+                var han = Convert.ToDateTime(Model["hanSuDung"]);
+                var hetHan = han.Date < DateTime.Now.Date;
+                <span class="@(hetHan ? "text-danger fw-bold" : "")">
+                    <i class="bi bi-calendar-x me-1"></i>Hạn sử dụng: @han.ToString("dd/MM/yyyy") @(hetHan ? "(Đã hết hạn)" : "")
+                </span>
+            }
+            @if (Model["baoHanhThang"] != null && Convert.ToInt32(Model["baoHanhThang"]) > 0)
+            {
+                <span><i class="bi bi-shield-check me-1"></i>Bảo hành: @Model["baoHanhThang"] tháng</span>
+            }
+        </div>
+        <p><b>Còn lại:</b> @(Model["inventory"] != null ? Model["inventory"]!["soLuongTon"] : 0) sản phẩm</p>
+        @{
+            var hanSuDungOk = true;
+            if (Model["hanSuDung"] != null && Model["hanSuDung"]!.Type != Newtonsoft.Json.Linq.JTokenType.Null)
+                hanSuDungOk = Convert.ToDateTime(Model["hanSuDung"]).Date >= DateTime.Now.Date;
+        }
+        @if (!hanSuDungOk)
+        {
+            <div class="alert alert-danger py-2">Sản phẩm đã hết hạn sử dụng, không thể đặt hàng.</div>
+        }
+        else
+        {
+        <form asp-controller="Cart" asp-action="Them" method="post" class="d-flex gap-2 align-items-center mt-3">
+            <input type="hidden" name="productId" value="@Model["productId"]" />
+            <input type="number" name="soLuong" value="1" min="1" class="form-control" style="width:100px" />
+            <button class="btn btn-primary"><i class="bi bi-cart-plus"></i> Thêm vào giỏ</button>
+        </form>
+        }
+    </div>
+</div>
+
+<style>
+    .product-nav-tabs {
+        display: flex;
+        background-color: #f8f9fa;
+        position: sticky;
+        top: 60px; /* Adjust based on your header height */
+        z-index: 1000;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .product-nav-tabs a {
+        flex: 1;
+        text-align: center;
+        padding: 15px 10px;
+        color: #555;
+        text-decoration: none;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-right: 1px solid #dee2e6;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+    }
+    .product-nav-tabs a:last-child {
+        border-right: none;
+    }
+    .product-nav-tabs a:hover {
+        background-color: #e9ecef;
+        color: #0056b3;
+    }
+    .product-nav-tabs a.active {
+        background-color: #0056b3;
+        color: #fff;
+        border-bottom-color: #0056b3;
+        position: relative;
+    }
+    .product-nav-tabs a.active::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 10px 10px 0;
+        border-style: solid;
+        border-color: #0056b3 transparent transparent transparent;
+    }
+    .section-content {
+        scroll-margin-top: 130px; /* Offset for sticky tabs */
+    }
+</style>
+
+<div class="product-nav-tabs" id="productNav">
+    <a href="#thong-tin-sp" class="nav-tab-link active"><i class="bi bi-file-text me-2"></i>Thông tin sản phẩm</a>
+    <a href="#thong-so-kt" class="nav-tab-link"><i class="bi bi-gear me-2"></i>Thông số kỹ thuật</a>
+    <a href="#huong-dan-sd" class="nav-tab-link"><i class="bi bi-check-square me-2"></i>Hướng dẫn sử dụng</a>
+    <a href="#danh-gia-sp" class="nav-tab-link"><i class="bi bi-chat-dots me-2"></i>Đánh giá sản phẩm</a>
+</div>
+
+<div id="thong-tin-sp" class="mb-5 section-content">
+    <h4 class="fw-bold mb-3 border-bottom pb-2 text-primary">Thông tin sản phẩm</h4>
+    <div class="content-box p-4 bg-white shadow-sm rounded border">
+        @Html.Raw(Model["moTa"]?.ToString().Replace("\n", "<br/>"))
+    </div>
+</div>
+
+<div id="thong-so-kt" class="mb-5 section-content">
+    <h4 class="fw-bold mb-3 border-bottom pb-2 text-primary">Thông số kỹ thuật</h4>
+    <div class="content-box p-4 bg-white shadow-sm rounded border">
+        @Html.Raw(Model["thongSoKyThuat"]?.ToString().Replace("\n", "<br/>"))
+    </div>
+</div>
+
+<div id="huong-dan-sd" class="mb-5 section-content">
+    <h4 class="fw-bold mb-3 border-bottom pb-2 text-primary">Hướng dẫn sử dụng</h4>
+    <div class="content-box p-4 bg-white shadow-sm rounded border">
+        @if (!string.IsNullOrWhiteSpace(Model["huongDanSuDung"]?.ToString()))
+        {
+            @Html.Raw(Model["huongDanSuDung"]?.ToString().Replace("\n", "<br/>"))
+        }
+        else
+        {
+            <p class="text-muted fst-italic mb-0">Đang cập nhật...</p>
+        }
+    </div>
+</div>
+
+<div id="danh-gia-sp" class="mb-5 section-content">
+    <h4 class="fw-bold mb-3 border-bottom pb-2 text-primary">Đánh giá sản phẩm</h4>
+@foreach (var r in (List<JObject>)ViewBag.Reviews)
+{
+    <div class="border-bottom py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <b class="text-dark">@r["tenNguoiDanhGia"]</b>
+            <span class="text-warning">@(new string('⭐', (int)r["soSao"]!))</span>
+        </div>
+        <div class="text-muted small mb-2">@Convert.ToDateTime(r["ngayDanhGia"]).ToString("dd/MM/yyyy HH:mm")</div>
+        <div class="mb-2">@r["noiDung"]</div>
+        
+        @if (r["phanHoi"] != null && r["phanHoi"]!.Type != Newtonsoft.Json.Linq.JTokenType.Null && !string.IsNullOrEmpty(r["phanHoi"]?.ToString()))
+        {
+            <div class="bg-light p-3 mt-2 rounded border-start border-4 border-info">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold text-info"><i class="bi bi-person-badge me-1"></i> Quản trị viên</span>
+                    <span class="text-muted small">@Convert.ToDateTime(r["ngayPhanHoi"]).ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+                <p class="mb-0 text-dark">@r["phanHoi"]</p>
+            </div>
+        }
+    </div>
+}
+@if (((List<JObject>)ViewBag.Reviews).Count == 0)
+{
+    <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+}
+<div class="card p-4 mt-4 shadow-sm border-0 bg-light" style="max-width:500px">
+    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-pencil-square me-2"></i>Viết đánh giá của bạn</h5>
+    @if(TempData["Loi"] != null)
+    {
+        <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>@TempData["Loi"]</div>
+    }
+    @if(TempData["ToastMessage"] != null)
+    {
+        <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>@TempData["ToastMessage"]</div>
+    }
+    @if (ViewBag.CanReview == true)
+    {
+        <form asp-controller="Reviews" asp-action="Create" method="post">
+            <input type="hidden" name="productId" value="@Model["productId"]" />
+            <div class="mb-3">
+                <label class="form-label fw-medium">Mức độ hài lòng</label>
+                <select name="soSao" class="form-select">
+                    <option value="5">⭐⭐⭐⭐⭐ (5 sao - Rất hài lòng)</option>
+                    <option value="4">⭐⭐⭐⭐ (4 sao - Hài lòng)</option>
+                    <option value="3">⭐⭐⭐ (3 sao - Bình thường)</option>
+                    <option value="2">⭐⭐ (2 sao - Không hài lòng)</option>
+                    <option value="1">⭐ (1 sao - Tệ)</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-medium">Nhận xét của bạn</label>
+                <textarea name="noiDung" class="form-control" rows="3" placeholder="Chia sẻ cảm nhận về sản phẩm..."></textarea>
+            </div>
+            <button class="btn btn-primary fw-bold w-100">Gửi đánh giá</button>
+        </form>
+    }
+    else
+    {
+        <div class="alert alert-secondary mb-0 border-0">
+            <i class="bi bi-info-circle-fill me-2"></i> Chỉ những khách hàng đã mua và nhận sản phẩm này mới có thể viết đánh giá.
+        </div>
+    }
+</div>
+
+
+<hr class="my-5" />
+<h4 class="fw-bold mb-4">Sản phẩm gợi ý cho bạn</h4>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4 mb-5">
+    @if (ViewBag.Recommendations != null)
+    {
+        foreach (var p in (List<Newtonsoft.Json.Linq.JObject>)ViewBag.Recommendations)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 product-card">
+                    <img src="@(p["hinhAnh"] ?? "/images/no-image.png")" class="card-img-top p-3" style="object-fit:contain; height:200px" />
+                    <div class="card-body text-center">
+                        <h6 class="card-title text-truncate">@p["tenSP"]</h6>
+                        <div class="text-danger fw-bold mb-2">@Convert.ToDecimal(p["gia"]).ToString("N0") đ</div>
+                        <a asp-controller="Products" asp-action="Detail" asp-route-id="@p["productId"]" class="btn btn-outline-primary btn-sm w-100 stretched-link">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<script>
+    // Handle smooth scrolling and active state for tabs
+    document.addEventListener('DOMContentLoaded', function () {
+        const links = document.querySelectorAll('.nav-tab-link');
+        const sections = document.querySelectorAll('.section-content');
+
+        // Smooth scroll
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                if(targetSection) {
+                    const offset = 110;
+                    const bodyRect = document.body.getBoundingClientRect().top;
+                    const elementRect = targetSection.getBoundingClientRect().top;
+                    const elementPosition = elementRect - bodyRect;
+                    const offsetPosition = elementPosition - offset;
+                    
+                    window.scrollTo({
+                         top: offsetPosition,
+                         behavior: "smooth"
+                    });
+                }
+            });
+        });
+
+        // Update active state on scroll
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= (sectionTop - 150)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            links.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    });
+</script>

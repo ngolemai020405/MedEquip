@@ -1,0 +1,110 @@
+@using Newtonsoft.Json.Linq
+@model JArray
+@{
+    ViewData["Title"] = "Quản lý Đánh giá";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-primary"><i class="bi bi-star-half me-2"></i>Quản lý Đánh giá</h3>
+</div>
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-secondary">
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Khách hàng</th>
+                        <th>Sản phẩm</th>
+                        <th>Đánh giá</th>
+                        <th>Nội dung</th>
+                        <th>Ngày ĐG</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        var daDuyet = (bool)r["daDuyet"];
+                        <tr>
+                            <td class="ps-4 fw-medium text-muted">#@r["reviewId"]</td>
+                            <td class="fw-semibold">@r["tenNguoiDanhGia"]</td>
+                            <td class="text-wrap" style="max-width: 150px;">@r["tenSanPham"]</td>
+                            <td class="text-warning text-nowrap">
+                                @for (int i = 0; i < (int)r["soSao"]; i++)
+                                {
+                                    <i class="bi bi-star-fill"></i>
+                                }
+                            </td>
+                            <td class="text-wrap" style="max-width: 250px;">@r["noiDung"]</td>
+                            <td>@Convert.ToDateTime(r["ngayDanhGia"]).ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="text-center">
+                                @if (daDuyet)
+                                {
+                                    <span class="badge bg-success rounded-pill px-3">Đã duyệt</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark rounded-pill px-3">Chờ duyệt</span>
+                                }
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="d-flex justify-content-center gap-1">
+                                    @if (!daDuyet)
+                                    {
+                                        <form asp-action="Duyet" asp-route-id="@r["reviewId"]" method="post" class="d-inline">
+                                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3" 
+                                                    onclick="return confirm('Duyệt đánh giá này để hiển thị công khai?');">
+                                                <i class="bi bi-check2-circle"></i> Duyệt
+                                            </button>
+                                        </form>
+                                    }
+                                    <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#replyModal-@r["reviewId"]">
+                                        <i class="bi bi-reply"></i> Phản hồi
+                                    </button>
+                                    <form asp-action="Delete" asp-route-id="@r["reviewId"]" method="post" class="d-inline">
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" 
+                                                onclick="return confirm('Bạn có chắc chắn muốn xóa đánh giá này không?');">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@foreach (var r in Model)
+{
+    <!-- Reply Modal -->
+    <div class="modal fade" id="replyModal-@r["reviewId"]" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Phản hồi đánh giá #@r["reviewId"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="PhanHoi" asp-route-id="@r["reviewId"]" method="post">
+                    <div class="modal-body text-start">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Nội dung đánh giá:</label>
+                            <p class="mb-0">@r["noiDung"]</p>
+                        </div>
+                        <div class="mb-3">
+                            <label for="noiDungPhanHoi-@r["reviewId"]" class="form-label">Nội dung phản hồi:</label>
+                            <textarea id="noiDungPhanHoi-@r["reviewId"]" name="noiDungPhanHoi" class="form-control" rows="3" required>@r["phanHoi"]</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary rounded-pill">Gửi Phản hồi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

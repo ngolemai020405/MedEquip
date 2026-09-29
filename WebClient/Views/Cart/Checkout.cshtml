@@ -1,0 +1,221 @@
+@model CheckoutVM
+@inject WebClient.Services.CartService CartService
+@{ 
+    ViewData["Title"] = "Thanh toán"; 
+    var cart = CartService.LayGioHang();
+    var total = cart.TongTien;
+}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h3 class="mb-4 fw-bold text-dark"><i class="bi bi-wallet2 me-2 text-primary"></i>Thanh toán đơn hàng</h3>
+        @if (ViewBag.Loi != null) { <div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>@ViewBag.Loi</div> }
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <form asp-action="Checkout" method="post" id="checkoutForm">
+                <h5 class="fw-bold mb-3">1. Thông tin Giao hàng</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Số điện thoại nhận hàng</label>
+                        <input asp-for="SDTNhan" class="form-control rounded-3" placeholder="Ví dụ: 0912345678"
+                               pattern="^(0(3[2-9]|5[5689]|7[06789]|8[1-9]|9[0-46-9]))[0-9]{7}$" required />
+                        <span asp-validation-for="SDTNhan" class="text-danger small"></span>
+                        <div class="form-text small">Nhập đúng số di động 10 số (VD: 0912345678)</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Tỉnh/Thành phố</label>
+                        <select asp-for="TinhId" id="tinhSelect" class="form-select rounded-3" required>
+                            <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                            @if (ViewBag.DanhSachTinh != null)
+                            {
+                                foreach (var t in (List<Newtonsoft.Json.Linq.JObject>)ViewBag.DanhSachTinh)
+                                {
+                                    <option value="@t["tinhId"]">@t["tenTinh"]</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="TinhId" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Xã/Phường</label>
+                        <select asp-for="PhuongXaId" id="phuongXaSelect" class="form-select rounded-3" required>
+                            <option value="">-- Chọn Tỉnh/Thành phố trước --</option>
+                        </select>
+                        <span asp-validation-for="PhuongXaId" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Số nhà, tên đường</label>
+                        <input asp-for="SoNhaTenDuongGiao" class="form-control rounded-3" placeholder="VD: 123 Nguyễn Văn Cừ" required />
+                        <span asp-validation-for="SoNhaTenDuongGiao" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium">Ghi chú (nếu có)</label>
+                        <textarea asp-for="GhiChu" class="form-control rounded-3" rows="2" placeholder="Ghi chú thêm về đơn hàng..."></textarea>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input asp-for="XacNhanChinhChu" class="form-check-input" type="checkbox" value="true" id="xacNhanChinhChu" required />
+                            <label class="form-check-label small" for="xacNhanChinhChu">
+                                Tôi xác nhận thông tin người nhận trên đây là <strong>chính chủ</strong> và chính xác.
+                            </label>
+                        </div>
+                        <span asp-validation-for="XacNhanChinhChu" class="text-danger small"></span>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-3">2. Phương thức giao hàng</h5>
+                <div class="mb-4">
+                    <div class="form-check border rounded-3 p-3 mb-2 bg-light">
+                        <input class="form-check-input ms-1" type="radio" asp-for="PhuongThucGiaoHang" value="GiaoHangTieuChuan" id="shipStandard" checked onchange="calculateTotal()">
+                        <label class="form-check-label fw-medium ms-2 d-flex justify-content-between align-items-center w-100" for="shipStandard">
+                            <span><i class="bi bi-truck fs-4 text-secondary me-3"></i>Giao hàng tiêu chuẩn (3-5 ngày)</span>
+                            <span class="text-primary fw-bold">30.000 đ</span>
+                        </label>
+                    </div>
+                    <div class="form-check border rounded-3 p-3">
+                        <input class="form-check-input ms-1" type="radio" asp-for="PhuongThucGiaoHang" value="GiaoHangHoaToc" id="shipExpress" onchange="calculateTotal()">
+                        <label class="form-check-label fw-medium ms-2 d-flex justify-content-between align-items-center w-100" for="shipExpress">
+                            <span><i class="bi bi-lightning-charge fs-4 text-warning me-3"></i>Giao hàng hỏa tốc (Trong ngày)</span>
+                            <span class="text-primary fw-bold">50.000 đ</span>
+                        </label>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3">3. Phương thức thanh toán (Giả lập)</h5>
+                <div class="mb-4">
+                    <div class="form-check border rounded-3 p-3 mb-2 bg-light">
+                        <input class="form-check-input ms-1" type="radio" asp-for="PhuongThucThanhToan" value="COD" id="payCOD" checked onchange="toggleQR(false)">
+                        <label class="form-check-label fw-medium ms-2 d-flex align-items-center" for="payCOD">
+                            <i class="bi bi-cash-coin fs-4 text-success me-3"></i>Thanh toán khi nhận hàng (COD)
+                        </label>
+                    </div>
+                    <div class="form-check border rounded-3 p-3">
+                        <input class="form-check-input ms-1" type="radio" asp-for="PhuongThucThanhToan" value="Transfer" id="payTransfer" onchange="toggleQR(true)">
+                        <label class="form-check-label fw-medium ms-2 d-flex align-items-center" for="payTransfer">
+                            <i class="bi bi-qr-code-scan fs-4 text-primary me-3"></i>Chuyển khoản qua mã QR
+                        </label>
+                    </div>
+                </div>
+                <div id="qrSection" class="text-center p-4 border rounded-4 mb-4 bg-light d-none">
+                    <h6 class="fw-bold text-primary mb-3">Quét mã QR để thanh toán</h6>
+                    <img id="qrCodeImg" src="" alt="QR Code" class="img-thumbnail rounded-3 mb-3 shadow-sm" />
+                    <p class="small text-muted mb-0">Đây là chức năng thanh toán giả lập. Vui lòng quét mã và bấm xác nhận bên dưới.</p>
+                </div>
+
+                <h5 class="fw-bold mb-3">4. Mã giảm giá</h5>
+                <div class="mb-4">
+                    <select id="promotionSelect" class="form-select" onchange="calculateTotal()">
+                        <option value="0">-- Chọn mã giảm giá --</option>
+                        @if (ViewBag.Promotions != null)
+                        {
+                            foreach (var p in (List<Newtonsoft.Json.Linq.JObject>)ViewBag.Promotions)
+                            {
+                                <option value="@p["phanTramGiam"]">@p["tenKM"] - Giảm @p["phanTramGiam"]%</option>
+                            }
+                        }
+                    </select>
+                </div>
+                
+                <div class="d-flex justify-content-between fs-6 mb-2">
+                    <span class="text-muted">Tạm tính:</span>
+                    <span class="fw-medium">@total.ToString("N0") đ</span>
+                </div>
+                <div class="d-flex justify-content-between fs-6 mb-3 border-bottom pb-3">
+                    <span class="text-muted">Phí giao hàng:</span>
+                    <span id="shippingDisplay" class="fw-medium">30.000 đ</span>
+                </div>
+                <div class="d-flex justify-content-between fs-5 mb-3">
+                    <span class="fw-bold">Tổng tiền:</span>
+                    <div>
+                        <span id="originalTotal" class="text-muted text-decoration-line-through fs-6 me-2 d-none"></span>
+                        <span id="totalDisplay" class="fw-bold text-danger">@total.ToString("N0") đ</span>
+                    </div>
+                </div>
+                <div class="alert alert-secondary border-0 rounded-3 small">
+                    <i class="bi bi-info-circle-fill text-primary me-2"></i> Lưu ý: Đây là đồ án môn học, chức năng thanh toán chỉ mang tính chất mô phỏng.
+                </div>
+                <div class="text-end mt-4">
+                    <button class="btn btn-primary btn-rounded px-5 py-2 fw-bold shadow-sm" type="submit">
+                        Xác nhận đặt hàng <i class="bi bi-arrow-right-circle ms-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    var baseTotal = @(cart.TongTien);
+    function toggleQR(show) {
+        document.getElementById('qrSection').classList.toggle('d-none', !show);
+        if (show) updateQR();
+    }
+    function updateQR() {
+        var currentTotal = calculateTotalValue();
+        var url = `https://img.vietqr.io/image/970422-000000000-compact2.png?amount=${currentTotal}&addInfo=ThanhToanDonHang`;
+        document.getElementById('qrCodeImg').src = url;
+    }
+    function calculateTotalValue() {
+        var pSelect = document.getElementById('promotionSelect');
+        var phanTram = pSelect ? parseFloat(pSelect.value) : 0;
+        var discount = baseTotal * (phanTram / 100);
+        var shippingCost = document.getElementById('shipExpress').checked ? 50000 : 30000;
+        return baseTotal - discount + shippingCost;
+    }
+    function calculateTotal() {
+        var currentTotal = calculateTotalValue();
+        var pSelect = document.getElementById('promotionSelect');
+        var phanTram = pSelect ? parseFloat(pSelect.value) : 0;
+        var shippingCost = document.getElementById('shipExpress').checked ? 50000 : 30000;
+        
+        document.getElementById('shippingDisplay').innerText = shippingCost.toLocaleString('vi-VN') + " đ";
+        
+        if (phanTram > 0) {
+            document.getElementById('originalTotal').innerText = (baseTotal + shippingCost).toLocaleString('vi-VN') + " đ";
+            document.getElementById('originalTotal').classList.remove('d-none');
+        } else {
+            document.getElementById('originalTotal').classList.add('d-none');
+        }
+
+        document.getElementById('totalDisplay').innerText = currentTotal.toLocaleString('vi-VN') + " đ";
+        if (!document.getElementById('qrSection').classList.contains('d-none')) {
+            updateQR();
+        }
+    }
+    async function loadPhuongXa(tinhId) {
+        var phuongXaSelect = document.getElementById('phuongXaSelect');
+        phuongXaSelect.innerHTML = '<option value="">-- Đang tải... --</option>';
+        if (!tinhId) {
+            phuongXaSelect.innerHTML = '<option value="">-- Chọn Tỉnh/Thành phố trước --</option>';
+            return;
+        }
+        try {
+            var res = await fetch('/Cart/PhuongXaTheoTinh?tinhId=' + tinhId);
+            var data = await res.json();
+            phuongXaSelect.innerHTML = '<option value="">-- Chọn Xã/Phường --</option>';
+            data.forEach(function (px) {
+                var opt = document.createElement('option');
+                opt.value = px.phuongXaId;
+                opt.textContent = px.tenPhuongXa;
+                phuongXaSelect.appendChild(opt);
+            });
+        } catch (e) {
+            phuongXaSelect.innerHTML = '<option value="">-- Lỗi tải dữ liệu, thử lại --</option>';
+        }
+    }
+
+    document.getElementById('tinhSelect').addEventListener('change', function () {
+        loadPhuongXa(this.value);
+    });
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        var initialTinhId = document.getElementById('tinhSelect').value;
+        var initialPhuongXaId = '@Model.PhuongXaId';
+        
+        if (initialTinhId) {
+            await loadPhuongXa(initialTinhId);
+            if (initialPhuongXaId && initialPhuongXaId != '0') {
+                document.getElementById('phuongXaSelect').value = initialPhuongXaId;
+            }
+        }
+        
+        // Cập nhật tổng tiền ngay khi tải trang để tính phí giao hàng
+        calculateTotal();
+    });
+</script>

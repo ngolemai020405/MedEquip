@@ -1,0 +1,43 @@
+﻿@model Cart
+@{ ViewData["Title"] = "Giỏ hàng"; }
+<h3 class="mb-3">Giỏ hàng của bạn</h3>
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-info">Giỏ hàng trong. <a asp-controller="Products" asp-action="Index">Tiếp tục mua sắm</a></div>
+}
+else
+{
+    <table class="table align-middle">
+        <thead><tr><th>Sản phẩm</th><th>Don Giá</th><th>Số lượng</th><th>Thành tiền</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var i in Model.Items)
+        {
+            <tr>
+                <td class="d-flex align-items-center gap-2">
+                    <img src="@(i.HinhAnh ?? "/images/no-image.png")" style="width:50px;height:50px;object-fit:cover" />
+                    @i.TenSP
+                </td>
+                <td>@i.Gia VND</td>
+                <td style="width:120px">
+                    <form asp-action="CapNhat" method="post" class="d-flex gap-1">
+                        <input type="hidden" name="productId" value="@i.ProductId" />
+                        <input type="number" name="soLuong" value="@i.SoLuong" min="1" class="form-control form-control-sm" />
+                        <button class="btn btn-sm btn-outline-secondary">Lưu</button>
+                    </form>
+                </td>
+                <td>@i.ThanhTien VND</td>
+                <td>
+                    <form asp-action="Xoa" method="post">
+                        <input type="hidden" name="productId" value="@i.ProductId" />
+                        <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <div class="text-end">
+        <h5>Tổng tiền: @Model.TongTien VND</h5>
+        <a class="btn btn-primary" asp-action="Checkout">Tiến hành đặt hàng</a>
+    </div>
+}

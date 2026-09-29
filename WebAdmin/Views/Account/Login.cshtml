@@ -1,0 +1,41 @@
+﻿@model LoginVM
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>Đăng nhập - MedEquip Admin</title>
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body style="background:#0d6efd; min-height:100vh; display:flex; align-items:center;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card shadow p-4">
+                    <h4 class="text-center mb-3">🏥 MedEquip Admin</h4>
+                    <p class="text-center text-muted">Đăng nhập trang quan tri</p>
+                    @if (ViewBag.Loi != null)
+                    {
+                        <div class="alert alert-danger">@ViewBag.Loi</div>
+                    }
+                    <form asp-action="Login" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" placeholder="admin1@medequip.vn" />
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label">Mật khẩu</label>
+                                <a asp-action="ForgotPassword" class="small text-decoration-none">Quên mật khẩu?</a>
+                            </div>
+                            <input asp-for="MatKhau" type="password" class="form-control" placeholder="123456" />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+                    </form>
+                    <p class="text-muted small mt-3 mb-0 text-center">Tài khoản demo: admin1@medequip.vn / 123456</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

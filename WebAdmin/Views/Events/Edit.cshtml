@@ -1,0 +1,173 @@
+@model WebAdmin.Models.EventVM
+@{
+    ViewData["Title"] = "Sửa sự kiện";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Sửa sự kiện</h1>
+    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        @if (TempData["Loi"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Loi"]</div>
+        }
+        
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <input type="hidden" asp-for="EventId" />
+            <input type="hidden" asp-for="HinhAnh" />
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label asp-for="TenSuKien" class="form-label fw-bold"></label>
+                        <input asp-for="TenSuKien" class="form-control" />
+                        <span asp-validation-for="TenSuKien" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Chọn đường dẫn cho Banner</label>
+                        <input type="hidden" asp-for="DuongDan" id="duongDan" />
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted mb-1">1. Chọn Danh mục</label>
+                                <select class="form-select" id="catSelect">
+                                    <option value="">-- Không chọn --</option>
+                                    @if (ViewBag.Categories != null)
+                                    {
+                                        foreach (var cat in (List<Newtonsoft.Json.Linq.JObject>)ViewBag.Categories)
+                                        {
+                                            <option value="@cat["categoryId"]">@cat["tenDanhMuc"]</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted mb-1">2. Chọn Sản phẩm (Tùy chọn)</label>
+                                <select class="form-select" id="prodSelect" disabled>
+                                    <option value="">-- Chọn danh mục trước --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-text mt-2">
+                            Đường dẫn thực tế: <strong id="lblDuongDan" class="text-primary">Trống</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NgayBatDau" class="form-label fw-bold"></label>
+                            <input asp-for="NgayBatDau" class="form-control" type="date" />
+                            <span asp-validation-for="NgayBatDau" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NgayKetThuc" class="form-label fw-bold"></label>
+                            <input asp-for="NgayKetThuc" class="form-control" type="date" />
+                            <span asp-validation-for="NgayKetThuc" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input asp-for="TrangThai" class="form-check-input" />
+                        <label asp-for="TrangThai" class="form-check-label fw-bold">Hiển thị (Kích hoạt)</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label asp-for="HinhAnhUpload" class="form-label fw-bold">Đổi ảnh (Để trống nếu không đổi)</label>
+                        <input asp-for="HinhAnhUpload" type="file" class="form-control" accept="image/*" id="imgInput" />
+                    </div>
+                    
+                    <div class="text-center mt-3 p-2 border rounded bg-light">
+                        <p class="small text-muted mb-2">Ảnh hiện tại</p>
+                        @{
+                            string hinhAnhPreview = Model.HinhAnh ?? "";
+                            if (hinhAnhPreview.StartsWith("/images/")) hinhAnhPreview = "https://localhost:7001" + hinhAnhPreview;
+                        }
+                        <img id="imgPreview" src="@hinhAnhPreview" class="img-fluid rounded" style="max-height: 250px; object-fit: cover; width: 100%;" />
+                    </div>
+                </div>
+            </div>
+            
+            <hr />
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Cập nhật</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Preview image
+        imgInput.onchange = evt => {
+            const [file] = imgInput.files
+            if (file) {
+                imgPreview.src = URL.createObjectURL(file)
+            }
+        }
+
+        // Handle DuongDan cascading dropdowns
+        const allProducts = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Products ?? new List<Newtonsoft.Json.Linq.JObject>()));
+        const catSelect = document.getElementById('catSelect');
+        const prodSelect = document.getElementById('prodSelect');
+        const duongDanInput = document.getElementById('duongDan');
+        const lblDuongDan = document.getElementById('lblDuongDan');
+
+        function updateDuongDan() {
+            let path = "";
+            if (prodSelect.value) {
+                path = "/Products/Detail/" + prodSelect.value;
+            } else if (catSelect.value) {
+                path = "/Products?categoryId=" + catSelect.value;
+            }
+            
+            duongDanInput.value = path;
+            lblDuongDan.textContent = path || "Trống";
+        }
+
+        catSelect.addEventListener('change', function() {
+            const catId = this.value;
+            prodSelect.innerHTML = '<option value="">-- Tất cả sản phẩm trong danh mục --</option>';
+            
+            if (catId) {
+                prodSelect.disabled = false;
+                const filteredProducts = allProducts.filter(p => p.categoryId == catId);
+                filteredProducts.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.productId;
+                    opt.textContent = p.tenSP;
+                    prodSelect.appendChild(opt);
+                });
+            } else {
+                prodSelect.disabled = true;
+                prodSelect.innerHTML = '<option value="">-- Chọn danh mục trước --</option>';
+            }
+            updateDuongDan();
+        });
+
+        prodSelect.addEventListener('change', updateDuongDan);
+        
+        // Init with Model.DuongDan
+        const initialDuongDan = '@(Model.DuongDan)';
+        if (initialDuongDan) {
+            if (initialDuongDan.startsWith('/Products?categoryId=')) {
+                catSelect.value = initialDuongDan.replace('/Products?categoryId=', '');
+                catSelect.dispatchEvent(new Event('change'));
+            } else if (initialDuongDan.startsWith('/Products/Detail/')) {
+                const prodId = initialDuongDan.replace('/Products/Detail/', '');
+                const prod = allProducts.find(p => p.productId == prodId);
+                if (prod) {
+                    catSelect.value = prod.categoryId;
+                    catSelect.dispatchEvent(new Event('change'));
+                    prodSelect.value = prodId;
+                }
+            }
+            updateDuongDan();
+        }
+    </script>
+}

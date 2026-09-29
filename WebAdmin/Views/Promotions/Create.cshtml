@@ -1,0 +1,17 @@
+@model PromotionsVM
+@{ ViewData["Title"] = "Them khuyen mai"; }
+<h3>Them khuyen mai</h3>
+@if (ViewBag.Loi != null) { <div class="alert alert-danger">@ViewBag.Loi</div> }
+<div class="card p-4" style="max-width:600px">
+    <form asp-action="Create" method="post">
+        <div class="mb-3"><label class="form-label">Tên khuyến mãi</label><input asp-for="TenKM" class="form-control" required /></div>
+        <div class="mb-3"><label class="form-label">Mô tả</label><textarea asp-for="MoTa" class="form-control"></textarea></div>
+        <div class="mb-3"><label class="form-label">Phan tram Giám (%)</label><input asp-for="PhanTramGiam" type="number" class="form-control" required /></div>
+        <div class="row">
+            <div class="col-md-6 mb-3"><label class="form-label">Ngay bat dau</label><input asp-for="NgayBatDau" type="date" class="form-control" /></div>
+            <div class="col-md-6 mb-3"><label class="form-label">Ngay ket thuc</label><input asp-for="NgayKetThuc" type="date" class="form-control" /></div>
+        </div>
+        <button class="btn btn-primary">Lưu</button>
+        <a class="btn btn-secondary" asp-action="Index">Huy</a>
+    </form>
+</div>

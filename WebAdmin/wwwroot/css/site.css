@@ -1,0 +1,91 @@
+:root {
+    --primary-color: #0E5E6F;
+    --primary-dark: #093e49;
+    --accent-color: #3A8891;
+    --light-accent: #E3F4F4;
+    --background-light: #F8F9FA;
+}
+
+body { font-family: 'Inter', sans-serif; background-color: var(--background-light); }
+
+/* Bootstrap Color Overrides */
+.text-primary { color: var(--primary-color) !important; }
+.bg-primary { background-color: var(--primary-color) !important; }
+.btn-primary { 
+    background-color: var(--primary-color); 
+    border-color: var(--primary-color); 
+    color: white;
+}
+.btn-primary:hover, .btn-primary:focus { 
+    background-color: var(--primary-dark) !important; 
+    border-color: var(--primary-dark) !important; 
+}
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Sidebar */
+.sidebar { 
+    background: #ffffff; 
+    width: 260px; 
+    min-height: 100vh; 
+    box-shadow: 2px 0 15px rgba(0,0,0,0.05); 
+    z-index: 1000; 
+    position: fixed; 
+}
+.sidebar-brand { padding: 1.5rem; border-bottom: 1px solid #f1f1f1; }
+.nav-link { 
+    color: #5a6a85; 
+    padding: 0.8rem 1.5rem; 
+    font-weight: 500; 
+    border-radius: 0 25px 25px 0; 
+    margin-right: 15px; 
+    margin-bottom: 5px; 
+    transition: all 0.3s ease; 
+}
+.nav-link:hover, .nav-link.active { 
+    background-color: var(--light-accent); 
+    color: var(--primary-color); 
+}
+.nav-link i { width: 24px; font-size: 1.1rem; }
+
+/* Main Content & Topbar */
+.main-content { margin-left: 260px; padding: 2rem; width: calc(100% - 260px); }
+.topbar { 
+    background: #fff; 
+    padding: 1rem 2rem; 
+    border-radius: 12px; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02); 
+    margin-bottom: 2rem; 
+    display: flex; 
+    justify-content: flex-end; 
+    align-items: center; 
+}
+
+/* Cards & Tables */
+.card { 
+    border: none; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
+    border-radius: 16px; 
+    transition: transform 0.2s; 
+}
+.card:hover { transform: translateY(-5px); }
+.btn-rounded { border-radius: 50px; }
+.table > :not(caption) > * > * { padding: 1rem; }
+
+/* Dashboard specific */
+.card-stat { border-radius: 16px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+.icon-circle { 
+    width: 48px; 
+    height: 48px; 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.5rem; 
+}

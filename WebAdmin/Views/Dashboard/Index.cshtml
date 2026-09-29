@@ -1,0 +1,151 @@
+@using Newtonsoft.Json.Linq
+@model JObject
+@{ ViewData["Title"] = "Tổng quan hệ thống"; }
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-dark">Tổng quan hệ thống</h3>
+    <div class="d-flex gap-2">
+        <form method="get" class="d-flex gap-2">
+            <select name="timeRange" class="form-select" onchange="this.form.submit()">
+                <option value="day" selected="@(ViewBag.TimeRange == "day")">Hôm nay</option>
+                <option value="week" selected="@(ViewBag.TimeRange == "week")">7 ngày qua</option>
+                <option value="month" selected="@(ViewBag.TimeRange == "month")">4 tuần qua</option>
+                <option value="year" selected="@(ViewBag.TimeRange == "year")">12 tháng qua</option>
+            </select>
+        </form>
+        <a href="@Url.Action("Export")" class="btn btn-primary rounded-pill px-4 text-nowrap"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Xuất báo cáo</a>
+        <a href="@Url.Action("Backup")" class="btn btn-success rounded-pill px-4 text-nowrap"><i class="bi bi-cloud-arrow-down me-2"></i>Sao lưu dữ liệu (.bak)</a>
+    </div>
+</div>
+
+@if (Model == null)
+{
+    <div class="alert alert-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i> Không lấy được dữ liệu từ API. Vui lòng kiểm tra lại Backend.</div>
+}
+else
+{
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100 p-4 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <p class="text-white-50 mb-1 fw-semibold text-uppercase" style="font-size: 0.8rem;">Tổng doanh thu</p>
+                    <h3 class="fw-bold mb-0">@(Convert.ToDecimal(Model["tongDoanhThu"]).ToString("N0")) đ</h3>
+                </div>
+                <i class="bi bi-cash-stack position-absolute opacity-25" style="font-size: 5rem; bottom: -10px; right: 10px;"></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100 p-4 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <p class="text-white-50 mb-1 fw-semibold text-uppercase" style="font-size: 0.8rem;">Tổng đơn hàng</p>
+                    <h3 class="fw-bold mb-0">@Model["tongSoDonHang"]</h3>
+                </div>
+                <i class="bi bi-receipt-cutoff position-absolute opacity-25" style="font-size: 5rem; bottom: -10px; right: 10px;"></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100 p-4 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <p class="text-white-50 mb-1 fw-semibold text-uppercase" style="font-size: 0.8rem;">Sản phẩm đang bán</p>
+                    <h3 class="fw-bold mb-0">@Model["tongSanPham"]</h3>
+                </div>
+                <i class="bi bi-box-seam position-absolute opacity-25" style="font-size: 5rem; bottom: -10px; right: 10px;"></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white h-100 p-4 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <p class="text-white-50 mb-1 fw-semibold text-uppercase" style="font-size: 0.8rem;">Sắp hết hàng</p>
+                    <h3 class="fw-bold mb-0">@Model["sanPhamSapHetHang"]</h3>
+                </div>
+                <i class="bi bi-exclamation-circle position-absolute opacity-25" style="font-size: 5rem; bottom: -10px; right: 10px;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card bg-secondary text-white h-100 p-4 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <p class="text-white-50 mb-1 fw-semibold text-uppercase" style="font-size: 0.8rem;">Lượt tương tác (Mô hình gợi ý)</p>
+                    <h3 class="fw-bold mb-0">@Model["totalBehaviors"] lượt</h3>
+                </div>
+                <i class="bi bi-graph-up position-absolute opacity-25" style="font-size: 5rem; bottom: -10px; right: 10px;"></i>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-dark text-white h-100 p-4 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <p class="text-white-50 mb-1 fw-semibold text-uppercase" style="font-size: 0.8rem;">Tổng SP Đã Bán (Đánh giá thuật toán)</p>
+                    <h3 class="fw-bold mb-0">@Model["recommendedSales"] SP</h3>
+                </div>
+                <i class="bi bi-robot position-absolute opacity-25" style="font-size: 5rem; bottom: -10px; right: 10px;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card h-100 p-4">
+                @{
+                    var chartTitle = "Biểu đồ doanh thu";
+                    if (ViewBag.TimeRange == "day") chartTitle += " Hôm nay";
+                    else if (ViewBag.TimeRange == "month") chartTitle += " 4 tuần qua";
+                    else if (ViewBag.TimeRange == "year") chartTitle += " 12 tháng qua";
+                    else chartTitle += " 7 ngày qua";
+                }
+                <h5 class="fw-bold text-dark mb-4">@chartTitle</h5>
+                <canvas id="revenueChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100 p-4">
+                <h5 class="fw-bold text-dark mb-4">Top 5 sản phẩm bán chạy</h5>
+                <ul class="list-group list-group-flush">
+                    @foreach (var sp in Model["topBanChay"]!)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom-dashed">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded p-2 me-3 text-primary"><i class="bi bi-award"></i></div>
+                                <div>
+                                    <h6 class="mb-0 fw-semibold text-dark text-truncate" style="max-width: 180px;">@sp["tenSP"]</h6>
+                                </div>
+                            </div>
+                            <span class="badge bg-primary rounded-pill px-3 py-2">@sp["soLuongBan"] đã bán</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('revenueChart');
+        if (ctx) {
+            var labels = @Html.Raw(Model["chartLabels"]!.ToString());
+            var data = @Html.Raw(Model["chartData"]!.ToString());
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Doanh thu (VNĐ)',
+                        data: data,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    });
+</script>

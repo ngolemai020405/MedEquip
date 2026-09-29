@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MedEquipMobile.Views.OrderDetailPage"
+             Title="{Binding Title}">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <Label Text="{Binding Order.OrderId, StringFormat='Mã ĐH: #{0}'}" FontAttributes="Bold" FontSize="20" />
+            <Label Text="{Binding Order.OrderDate, StringFormat='Ngày đặt: {0:dd/MM/yyyy HH:mm}'}" />
+            <Label Text="{Binding Order.Status, StringFormat='Trạng thái: {0}'}" TextColor="Blue" FontAttributes="Bold" />
+            <Label Text="{Binding Order.TotalAmount, StringFormat='Tổng tiền: {0:N0} đ'}" TextColor="Red" FontSize="18" />
+            
+            <Label Text="Theo dõi giao hàng" FontAttributes="Bold" Margin="0,10,0,0"/>
+            <!-- Giả lập UI theo dõi trạng thái giao hàng -->
+            <VerticalStackLayout Spacing="5" Margin="10,0,0,0">
+                <Label Text="✓ Đã xác nhận đơn hàng" TextColor="Green" />
+                <Label Text="✓ Đang đóng gói" TextColor="Green" />
+                <Label Text="✓ Đang giao hàng" TextColor="{Binding Order.Status, Converter={StaticResource StatusColorConverter}}" />
+            </VerticalStackLayout>
+            
+            <Label Text="Sản phẩm" FontAttributes="Bold" Margin="0,15,0,0"/>
+            <CollectionView ItemsSource="{Binding Order.OrderDetails}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="0,0,0,10" Padding="10">
+                            <Grid ColumnDefinitions="80, *">
+                                <Image Source="{Binding MainImageUrl}" WidthRequest="80" HeightRequest="80" />
+                                <VerticalStackLayout Grid.Column="1" Padding="10,0,0,0">
+                                    <Label Text="{Binding ProductName}" FontAttributes="Bold" />
+                                    <Label Text="{Binding Quantity, StringFormat='SL: {0}'}" />
+                                    <Label Text="{Binding UnitPrice, StringFormat='{0:N0} đ'}" TextColor="Red" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

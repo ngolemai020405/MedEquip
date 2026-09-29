@@ -1,0 +1,158 @@
+@using Newtonsoft.Json.Linq
+@model ProductVM
+@{ ViewData["Title"] = "Them Sản phẩm"; }
+<h3>Them Sản phẩm</h3>
+@if (ViewBag.Loi != null) { <div class="alert alert-danger">@ViewBag.Loi</div> }
+<div class="card p-4" style="max-width:700px">
+    <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div><form asp-action="Create" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Tên sản phẩm</label>
+            <input asp-for="TenSP" class="form-control" required />
+            <span asp-validation-for="TenSP" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Mô tả chi tiết</label>
+            <textarea asp-for="MoTa" class="form-control rich-editor"></textarea>
+            <span asp-validation-for="MoTa" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Thông số kỹ thuật</label>
+            <textarea asp-for="ThongSoKyThuat" class="form-control rich-editor"></textarea>
+            <span asp-validation-for="ThongSoKyThuat" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Hướng dẫn sử dụng</label>
+            <textarea asp-for="HuongDanSuDung" class="form-control rich-editor" rows="3" placeholder="Hướng dẫn sử dụng chi tiết cho sản phẩm..."></textarea>
+            <span asp-validation-for="HuongDanSuDung" class="text-danger"></span>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Hạn sử dụng (nếu có)</label>
+                <input asp-for="HanSuDung" type="date" class="form-control" />
+                <span asp-validation-for="HanSuDung" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Bảo hành (tháng)</label>
+                <input asp-for="BaoHanhThang" type="number" min="0" class="form-control" />
+                <span asp-validation-for="BaoHanhThang" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Giá (VND)</label>
+                <input asp-for="Gia" type="number" min="0" class="form-control" required />
+                <span asp-validation-for="Gia" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Số lượng ton ban dau</label>
+                <input asp-for="SoLuongTonBanDau" type="number" min="0" class="form-control" />
+                <span asp-validation-for="SoLuongTonBanDau" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Danh mục cha</label>
+                <select id="parentCategory" class="form-select" onchange="loadSubCategories()">
+                    <option value="">-- Chọn danh mục cha --</option>
+                    @foreach (var c in (List<JObject>)ViewBag.Categories)
+                    {
+                        <option value="@c["categoryId"]">@c["tenDanhMuc"]</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Danh mục con</label>
+                <select asp-for="CategoryId" class="form-select" id="subCategory">
+                    <option value="">-- Chọn danh mục con --</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Nha cung cap</label>
+                <select asp-for="SupplierId" class="form-select">
+                    @foreach (var s in (List<JObject>)ViewBag.Suppliers)
+                    {
+                        <option value="@s["supplierId"]">@s["tenNCC"]</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Tải lên hình ảnh</label>
+            <input type="file" asp-for="HinhAnhUpload" class="form-control" accept="image/*" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Hoặc nhập đường dẫn Hình ảnh</label>
+            <input asp-for="HinhAnh" class="form-control" placeholder="/images/products/sp01.jpg" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label text-primary fw-bold">1. Tải lên nhiều ảnh phụ (từ máy tính)</label>
+            <div class="d-flex gap-2 mb-2">
+                <input type="file" asp-for="HinhAnhPhu" class="form-control" accept="image/*" multiple title="Chọn các file ảnh lẻ" placeholder="Chọn File" onchange="previewImages(this)" id="fileL" />
+                <input type="file" name="HinhAnhPhu" class="form-control" accept="image/*" webkitdirectory directory title="Chọn nguyên một thư mục" placeholder="Chọn Thư mục" onchange="previewImages(this)" id="fileR" />
+            </div>
+            <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mb-2"></div>
+            <div class="form-text small text-danger">MẸO: Ô <strong>trái</strong> để chọn nhiều file lẻ (Giữ Ctrl). Ô <strong>phải</strong> để tải lên nguyên 1 thư mục ảnh!</div>
+        </div>
+        <div class="mb-3 border rounded p-3 bg-light">
+            <label class="form-label text-primary fw-bold">2. Hoặc dán link nhiều ảnh phụ (từ web khác)</label>
+            <textarea asp-for="HinhAnhPhuLinks" class="form-control" rows="3" placeholder="Ví dụ:&#10;https://web.com/anh1.jpg&#10;https://web.com/anh2.jpg"></textarea>
+            <div class="form-text small">Mỗi link để trên 1 dòng, hoặc cách nhau bằng dấu phẩy.</div>
+        </div>
+        <button class="btn btn-primary">Lưu</button>
+        <a class="btn btn-secondary" asp-action="Index">Huy</a>
+    </form>
+</div>
+<script>
+    const categoriesData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Categories));
+    function loadSubCategories() {
+        const parentId = document.getElementById("parentCategory").value;
+        const subSelect = document.getElementById("subCategory");
+        subSelect.innerHTML = '<option value="">-- Chọn danh mục con --</option>';
+        if (!parentId) return;
+        const parent = categoriesData.find(c => c.categoryId == parentId);
+        if (parent && parent.danhMucCon) {
+            parent.danhMucCon.forEach(con => {
+                const opt = document.createElement("option");
+                opt.value = con.categoryId;
+                opt.textContent = con.tenDanhMuc;
+                subSelect.appendChild(opt);
+            });
+        }
+    }
+</script>
+<style>
+    .tox-notifications-container { display: none !important; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    tinymce.init({
+        selector: '.rich-editor',
+        height: 350,
+        menubar: false,
+        plugins: 'lists link image code',
+        toolbar: 'undo redo | blocks | bold italic forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | removeformat | code',
+        promotion: false,
+        branding: false
+    });
+</script>
+<script>
+    function previewImages(input) {
+        const container = document.getElementById('imagePreviewContainer');
+        if (input.files && input.files.length > 0) {
+            Array.from(input.files).forEach(file => {
+                if (file.type.match('image.*')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'img-thumbnail';
+                        img.style.height = '100px';
+                        img.style.objectFit = 'contain';
+                        container.appendChild(img);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    }
+</script>

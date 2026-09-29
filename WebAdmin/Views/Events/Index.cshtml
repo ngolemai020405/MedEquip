@@ -1,0 +1,117 @@
+@model List<Newtonsoft.Json.Linq.JObject>
+@{
+    ViewData["Title"] = "Quản lý sự kiện / Banner";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Quản lý sự kiện (Banner quảng cáo)</h1>
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Thêm sự kiện mới</a>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th width="50">ID</th>
+                        <th width="150">Hình ảnh</th>
+                        <th>Tên sự kiện</th>
+                        <th>Đường dẫn</th>
+                        <th>Thời hạn</th>
+                        <th width="120">Trạng thái</th>
+                        <th width="150">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var ngayBatDau = Convert.ToDateTime(item["ngayBatDau"]);
+                        var ngayKetThuc = Convert.ToDateTime(item["ngayKetThuc"]);
+                        var isHethan = ngayKetThuc < DateTime.Now;
+                        var isTrangThai = Convert.ToBoolean(item["trangThai"]);
+                        
+                        <tr>
+                            <td>@item["eventId"]</td>
+                            <td>
+                                @{
+                                    string hinhAnhUrl = item["hinhAnh"]?.ToString() ?? "";
+                                    if (hinhAnhUrl.StartsWith("/images/"))
+                                    {
+                                        hinhAnhUrl = "https://localhost:7001" + hinhAnhUrl;
+                                    }
+                                }
+                                <img src="@hinhAnhUrl" class="img-thumbnail" style="max-height: 80px" />
+                            </td>
+                            <td class="fw-bold">@item["tenSuKien"]</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item["duongDan"]?.ToString()))
+                                {
+                                    <a href="@item["duongDan"]" target="_blank" class="text-truncate d-inline-block" style="max-width:200px">@item["duongDan"]</a>
+                                }
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <div><b>Từ:</b> @ngayBatDau.ToString("dd/MM/yyyy")</div>
+                                    <div>
+                                        <b>Đến:</b> @ngayKetThuc.ToString("dd/MM/yyyy") 
+                                        @if (isHethan)
+                                        {
+                                            <span class="badge bg-danger ms-1">Hết hạn</span>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (isTrangThai && !isHethan)
+                                {
+                                    <span class="badge bg-success">Đang hiển thị</span>
+                                }
+                                else if (!isTrangThai)
+                                {
+                                    <span class="badge bg-secondary">Đã ẩn</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item["eventId"]" class="btn btn-sm btn-info text-white"><i class="bi bi-pencil"></i> Sửa</a>
+                                <button type="button" class="btn btn-sm btn-danger btn-delete" data-id="@item["eventId"]"><i class="bi bi-trash"></i> Xóa</button>
+                            </td>
+                        </tr>
+                    }
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td colspan="7" class="text-center py-4">Chưa có sự kiện nào.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).on('click', '.btn-delete', function() {
+            let id = $(this).data('id');
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                text: "Bạn không thể hoàn tác hành động này!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Đồng ý xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Events/Delete/' + id, function(res) {
+                        if (res.success) {
+                            location.reload();
+                        } else {
+                            Swal.fire('Lỗi', res.message, 'error');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

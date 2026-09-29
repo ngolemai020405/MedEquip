@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="MedEquipMobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:MedEquipMobile"
+    xmlns:views="clr-namespace:MedEquipMobile.Views"
+    xmlns:fonts="clr-namespace:MedEquipMobile.Resources.Fonts"
+    Shell.FlyoutBehavior="Disabled">
+    
+    <Shell.Resources>
+        <Style x:Key="BaseStyle" TargetType="Element">
+            <Setter Property="Shell.BackgroundColor" Value="{StaticResource Primary}" />
+            <Setter Property="Shell.ForegroundColor" Value="White" />
+            <Setter Property="Shell.TitleColor" Value="White" />
+            <Setter Property="Shell.DisabledColor" Value="#B4FFFFFF" />
+            <Setter Property="Shell.UnselectedColor" Value="#95FFFFFF" />
+            <Setter Property="Shell.TabBarBackgroundColor" Value="White" />
+            <Setter Property="Shell.TabBarForegroundColor" Value="{StaticResource Primary}"/>
+            <Setter Property="Shell.TabBarUnselectedColor" Value="#999999"/>
+            <Setter Property="Shell.TabBarTitleColor" Value="{StaticResource Primary}"/>
+        </Style>
+        <Style TargetType="TabBar" BasedOn="{StaticResource BaseStyle}" />
+        <Style TargetType="FlyoutItem" BasedOn="{StaticResource BaseStyle}" />
+    </Shell.Resources>
+
+    <TabBar>
+        <Tab Title="Trang chủ">
+            <Tab.Icon>
+                <FontImageSource FontFamily="MaterialDesignIcons" Glyph="{x:Static fonts:IconFont.Home}" Color="{StaticResource Primary}" Size="24" />
+            </Tab.Icon>
+            <ShellContent Route="HomePage" ContentTemplate="{DataTemplate views:HomePage}" />
+        </Tab>
+        <Tab Title="Giỏ hàng">
+            <Tab.Icon>
+                <FontImageSource FontFamily="MaterialDesignIcons" Glyph="{x:Static fonts:IconFont.Cart}" Color="{StaticResource Primary}" Size="24" />
+            </Tab.Icon>
+            <ShellContent Route="CartPage" ContentTemplate="{DataTemplate views:CartPage}" />
+        </Tab>
+        <Tab Title="Đơn hàng">
+            <Tab.Icon>
+                <FontImageSource FontFamily="MaterialDesignIcons" Glyph="{x:Static fonts:IconFont.ClipboardList}" Color="{StaticResource Primary}" Size="24" />
+            </Tab.Icon>
+            <ShellContent Route="OrdersPage" ContentTemplate="{DataTemplate views:OrdersPage}" />
+        </Tab>
+        <Tab Title="Tài khoản">
+            <Tab.Icon>
+                <FontImageSource FontFamily="MaterialDesignIcons" Glyph="{x:Static fonts:IconFont.Account}" Color="{StaticResource Primary}" Size="24" />
+            </Tab.Icon>
+            <ShellContent Route="ProfilePage" ContentTemplate="{DataTemplate views:ProfilePage}" />
+        </Tab>
+    </TabBar>
+
+</Shell>

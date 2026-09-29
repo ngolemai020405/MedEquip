@@ -1,0 +1,35 @@
+@using Newtonsoft.Json.Linq
+@model List<JObject>
+@{ ViewData["Title"] = "Danh mục"; }
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-primary"><i class="bi bi-tags me-2"></i>Quản lý Danh mục</h3>
+    <a class="btn btn-primary rounded-pill px-4 shadow-sm" asp-action="Create">
+        <i class="bi bi-plus-lg me-1"></i> Thêm Danh mục cha
+    </a>
+</div>
+<div class="card p-3">
+    <table class="table table-hover align-middle">
+        <thead><tr><th>Tên danh mục</th><th>Mô tả</th><th>Danh mục con</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td class="fw-bold">@c["tenDanhMuc"]</td>
+                <td>@c["moTa"]</td>
+                <td>
+                    @foreach (var con in c["danhMucCon"]!)
+                    {
+                        <span class="badge bg-secondary me-1">@con["tenDanhMuc"]</span>
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@c["categoryId"]">Sửa</a>
+                    <form asp-action="Delete" asp-route-id="@c["categoryId"]" method="post" style="display:inline" onsubmit="return confirm('Xóa Danh mục nay?')">
+                        <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

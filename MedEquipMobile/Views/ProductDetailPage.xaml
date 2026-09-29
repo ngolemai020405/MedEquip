@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MedEquipMobile.Views.ProductDetailPage"
+             Title="{Binding Title}">
+    
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" />
+            
+            <VerticalStackLayout IsVisible="{Binding IsNotBusy}" Spacing="10">
+                <Image Source="{Binding Product.MainImageUrl}" HeightRequest="250" Aspect="AspectFit" />
+                <Label Text="{Binding Product.Name}" FontSize="24" FontAttributes="Bold" />
+                <Label Text="{Binding Product.Price, StringFormat='{0:N0} đ'}" FontSize="20" TextColor="Red" />
+                
+                <Label Text="Mô tả sản phẩm" FontAttributes="Bold" FontSize="18" Margin="0,15,0,0" />
+                <Label Text="{Binding Product.Description}" />
+                
+                <Button Text="Thêm vào giỏ hàng" Command="{Binding AddToCartCommand}" Margin="0,20,0,0" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
